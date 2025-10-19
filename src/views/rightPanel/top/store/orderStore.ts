@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { DeliveryOrder, CombinedOrder } from '@/views/cesium/toolbar/takeaway/interface'
+import type { DeliveryOrder, CombinedOrder } from '@/views/cesium/toolbar/takeaway/interface-nouse'
 // import { getDistanceM } from '@/views/cesium/toolbar/takeaway/utils/pathUtils';
 // import {type Ref} from 'vue' //Pinia 会自动把 state 变成响应式的
 export const useOrderStore = defineStore('order', {

@@ -1,6 +1,6 @@
 import * as Cesium from 'cesium';
 import { createApp, type Ref, ref } from 'vue'
-import Popup from '../components/Popup.vue'
+import Popup from '@/components/takeaway/Popup.vue'
 import { throttle } from 'lodash-es'
 
 //弹窗偏移
@@ -183,7 +183,6 @@ export default class InfoPopup {
   }
 
   public removeListen() {
-    console.log('接收信号 移除位置变化监听', this.entity)
     //不再 postRender 监听
     this.viewer.scene.postRender.removeEventListener(this.postRenderFn)
   }
@@ -200,8 +199,6 @@ export default class InfoPopup {
   }
   //切换
   toggle() {
-    console.log('this.showRef', typeof this.showRef)
-    console.log('this.showRef.value', this.showRef.value)
     if (this.showRef)
       this.showRef.value = !this.showRef.value
   }

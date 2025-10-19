@@ -1,14 +1,11 @@
 import * as Cesium from 'cesium'
-import type { SegmentType } from '../interface'
+import type { SegmentType } from '../interface-nouse'
 export class PathCalculationService {
   private order0: any = null
   private stepSegments: Record<string, SegmentType[]> = {} //外界传入 stepSegments
   private driverPosition: Cesium.Cartesian3 = new Cesium.Cartesian3()
-
   private nextPos: Cesium.Cartesian3 = new Cesium.Cartesian3()  //下一个坐标 用于计算其骑手朝向
-
   private orientation: Cesium.Quaternion = new Cesium.Quaternion()
-
   private lastDistance: number = 0
 
   /**
@@ -25,8 +22,7 @@ export class PathCalculationService {
 
     // 初始化骑手位置为路径起点 //如果此时不是数据回显阶段 才初始化骑手位置为路径起点
     if (order0 && order0.fullpath && order0.fullpath.length > 0 && !isPath) {
-      // const startPoint = order0.fullpath[0]
-      // this.driverPosition = Cesium.Cartesian3.fromDegrees(startPoint[0], startPoint[1])
+
       if (this.stepSegments[0][0].startC3)
         this.driverPosition = this.stepSegments[0][0]?.startC3
 
@@ -123,7 +119,6 @@ export class PathCalculationService {
   }
 
 
-
   /**
    * 二分法查找step索引
    */
@@ -141,19 +136,7 @@ export class PathCalculationService {
       } else {
         right = mid - 1
       }
-      /*  if (isCombined) {
-         if (this.order0.steps[mid].combinedDuration <= duration) {
-           left = mid + 1
-         } else {
-           right = mid - 1
-         }
-       } else {
-         if (this.order0.steps[mid].cumduration <= duration) {
-           left = mid + 1
-         } else {
-           right = mid - 1
-         }
-       } */
+
     }
 
     return Math.max(0, Math.min(left, this.order0.steps.length - 1))

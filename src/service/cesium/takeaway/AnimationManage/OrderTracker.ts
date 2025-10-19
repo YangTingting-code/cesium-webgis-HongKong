@@ -1,6 +1,6 @@
 // 专门负责“里程碑追踪与订单状态更新”
 import { useOrderStore } from '@/views/rightPanel/top/store/orderStore'
-import { type Milestone } from '@/views/cesium/toolbar/takeaway/interface'
+import { type Milestone } from '@/interface/takeaway/interface'
 export class OrderTracker {
   private orderStore = useOrderStore()
   private lastCumDistance: number = 0

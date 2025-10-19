@@ -1,7 +1,7 @@
 import localForage from "localforage"
-import type { DeliveryOrder, NodePoint, CombinedOrder, SlotData } from "../interface"
-import { classifyDeliveryNodes } from "../utils/parseData"
-import { generateDeliveryOrders, buildCombineOrder } from "../utils/generateOrders"
+import type { DeliveryOrder, NodePoint, CombinedOrder, SlotData } from "@/interface/takeaway/interface"
+import { classifyDeliveryNodes } from "@/utils/takeaway/parseData"
+import { generateDeliveryOrders, buildCombineOrder } from "@/utils/takeaway/generateOrders"
 
 export class OrderStore {
   private store
@@ -440,9 +440,8 @@ export class OrderStore {
     for (let i = 0; i < validOrders.length; i += groupSize) {
       groupOrders.push(validOrders.slice(i, i + groupSize)) //每三个一组
     }
-    console.log('groupOrders', groupOrders)
-    debugger
-    const pathUtils = await import('../utils/pathUtils')
+
+    const pathUtils = await import('@/utils/takeaway/pathUtils')
 
     // const today = new Date().toString().split('T')[0] //获取T之前的
     const startTimeIso = `T${timeslot.toString().padStart(2, '0')}:00:00+08:00`

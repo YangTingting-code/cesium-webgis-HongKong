@@ -53,7 +53,7 @@
 import { ref, onMounted, inject, watch } from 'vue'
 import type { Ref } from 'vue'
 import {SceneStateManager} from '@/service/cesium/takeaway/SceneManage/SceneStateManager'
-import {useSceneStore} from './store/sceneStore'
+import {useSceneStore} from '../../../../store/takeaway/sceneStore'
 import {createRiderController} from '@/composables/cesium/takeaway/createRiderController'
 import {ScenePersistence} from '@/service/cesium/takeaway/SceneManage/ScenePersistence'
 import {ClockController} from '@/service/cesium/takeaway/AnimationManage/ClockController'
@@ -100,7 +100,6 @@ async function initializeServices(viewer: Cesium.Viewer) {
  * 开始骑手动画
  */
 async function startRiderAnimation() {
-  
   if (!viewerRef.value) {
     console.error('服务未初始化')
     return
@@ -124,11 +123,16 @@ async function startRiderAnimation() {
       pathService = services.pathService
     }
 
+    //如果此时已经有图钉entity就不再启动
+    if(pointService?.hasEntity()) return
+
+
     if (!combinedOrder || !order0StartIso || !orderStepSegments) return
     
     // // 设置动画数据 一次性把数据库里面所有的订单数据设置了
     animationService!.setAnimationData(combinedOrder, orderStepSegments)
 
+    
     // 绘制起点终点 , 并注册和起点终点有关的鼠标（点击/移动）事件
     await pointService!.drawCombinedStops() // 见下一条
   
@@ -151,8 +155,6 @@ async function startRiderAnimation() {
 
 // 动画控制方法
 const playAnimation = () => {
-  console.log('启动动画前 PathService 实例是否复用？', sceneStateManager.getServices().pathService)
-
   startRiderAnimation()
   //取消订单面板轮询
   sceneStore.stopPolling()
@@ -164,18 +166,13 @@ const playAnimation = () => {
 }
 
 const pauseAnimation = () => {
-  // const {animationService} = sceneStateManager.getServices()
   clockController.pauseAnimation()
-  // if(animationService)
-  //   animationService.pauseAnimation()
+
   updateAnimationState()
 }
 
 const resumeAnimation = () => {
   clockController.resumeAnimation()
-  // const {animationService} = sceneStateManager.getServices()
-  // if(animationService)
-  //   animationService.resumeAnimation()
   updateAnimationState()
 }
 
@@ -184,7 +181,7 @@ const followRider = ()=>{
   isFollow = true
   const {pointService,pathService} = sceneStateManager.getServices()
   if(pointService && pathService){
-    pointService.hide() //视线跟随的时候隐藏所有弹窗
+    pointService.hidePopups() //视线跟随的时候隐藏所有弹窗
     pathService.followRider(true)
   }
 }
@@ -193,7 +190,7 @@ const removeFllow = ()=>{
   isFollow = false
   const {pointService,pathService} = sceneStateManager.getServices()
   if(pointService && pathService){
-    pointService.hide() //视线跟随的时候隐藏所有弹窗
+    pointService.hidePopups() //视线跟随的时候隐藏所有弹窗
     pathService.removeFollow()
   }
 }

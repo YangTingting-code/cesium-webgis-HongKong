@@ -2,7 +2,7 @@ import { OrderStore } from '../db/OrderStore'
 import * as Cesium from 'cesium'
 import * as turf from '@turf/turf'
 import { position2bbox } from '@/utils/aboutCamera'
-import { DeliveryOrder } from '../interface'
+import { DeliveryOrder } from '../interface-nouse'
 import stripeImg from '@/assets/stripe2.png'
 const orderStore = new OrderStore()
 const order0 = await orderStore.getOrderFirst()

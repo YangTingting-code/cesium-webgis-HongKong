@@ -1,6 +1,6 @@
-import type { PathService } from './PathService'
-import type { AnimationService } from './AnimationService'
-import type { PointService } from './PointService'
+import type { PathService } from '@/service/cesium/takeaway/PathManage/PathService'
+import type { AnimationService } from '@/service/cesium/takeaway/AnimationManage/AnimationService'
+import type { PointService } from '@/service/cesium/takeaway/PointManage/PointService'
 
 //统一管理全局的Cesium 服务实例
 export const GlobalServices = {

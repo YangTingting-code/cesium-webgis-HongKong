@@ -2,11 +2,13 @@
 import * as turf from '@turf/turf'
 import { pathUtils } from '../utils/pathUtils'
 import { PathCalculationService } from './PathCalculationService'
-import { ModelService } from './modelService'
-import type { CombinedOrder, SegmentType, SegmentBuckets } from '../interface'
+import { ModelService } from '../../../../../service/cesium/takeaway/modelService'
+import type { CombinedOrder, SegmentType, SegmentBuckets } from '../interface-nouse'
 
+console.info('[PathService] v0 Baseline loaded');
 
-export class PathService {
+export class PathService000000 {
+
   private viewer: Cesium.Viewer
   // private riderEntity: Cesium.Entity | undefined
   private currentPath: [number, number][] | null = null

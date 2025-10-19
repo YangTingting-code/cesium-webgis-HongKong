@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
   import localForage from 'localforage';
-  import type {NodePoint} from './interface'
+  import type {NodePoint} from './interface-nouse'
   import { onMounted,inject,type Ref, watch } from 'vue';
   import {classifyDeliveryNodes} from "./utils/parseData"
   import {generateDeliveryOrders} from "./utils/generateOrders"

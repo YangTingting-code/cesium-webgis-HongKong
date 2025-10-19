@@ -51,7 +51,6 @@ export class TickLoop {
       useLastElapsed = false
 
       const cumDistance = this.pathTracker.getCumDistance(elapsed)
-      // const cumDistance = this.pathService.getCumDistance(elapsed)
 
       // const isBack = this.lastCumDistance > cumDistance //上一次的距离大于这一次的距离 说明时间倒流
       const isBack = this.orderTracker.isBack(cumDistance)

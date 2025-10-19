@@ -153,20 +153,6 @@ export class ModelService {
 
     this.followCamListener = this.viewer.scene.postRender.addEventListener(() => {
       this.setCameraPosToRider(true, getPosition, getOrientation)
-      // const modelPos = getPosition() //得到模型C3位置
-      // const modelQuat = getOrientation()  //得到模型当前的朝向
-
-      // if (!modelPos || !modelQuat || Cesium.Cartesian3.equals(modelPos, Cesium.Cartesian3.ZERO)) return
-
-      // // 1. 骑手→世界矩阵
-      // const rotMat3 = Cesium.Matrix3.fromQuaternion(modelQuat, new Cesium.Matrix3()) //方向四元数转为矩阵3
-      // const transform = Cesium.Matrix4.fromRotationTranslation(rotMat3, modelPos, new Cesium.Matrix4()) //根据朝向和骑手的位置创建矩阵4
-
-      // // 2. 相机在骑手局部系里的偏移（后 150 上 80） 这个完全可以控制照相机的视角 
-      // const localOffset = new Cesium.Cartesian3(0, -150, 80) //相对于模型局部坐标的偏移
-
-      // // 3. 最终摆相机
-      // this.viewer.camera.lookAtTransform(transform, localOffset) //骑手当前的矩阵4位置 + 相对于矩阵4的偏移量得到照相机的位置
     });
   }
 
@@ -237,45 +223,6 @@ export class ModelService {
 
 
   }
-
-  // public setCameraBehindRider(
-  //   getPosition: () => Cesium.Cartesian3,
-  //   getOrientation: () => Cesium.Quaternion
-  // ) {
-  //   const riderPos = getPosition()
-  //   const riderOri = getOrientation()
-
-  //   // 2. 从四元数提取骑手朝向（前进方向）
-  //   const matrix = Cesium.Matrix3.fromQuaternion(riderOri)
-  //   const forward = Cesium.Matrix3.getColumn(matrix, 0, new Cesium.Cartesian3()) //骑手前方
-  //   const up = Cesium.Matrix3.getColumn(matrix, 2, new Cesium.Cartesian3()) // 骑手上方 ? 为什么要Z方向 地球是球体 每一个地方的Z方向不一样
-  //   const right = Cesium.Matrix3.getColumn(matrix, 1, new Cesium.Cartesian3())
-
-  //   // 3. 计算斜后上偏移量：后退 60米，右偏 20米，上升 30米
-  //   const offset = new Cesium.Cartesian3()
-  //   Cesium.Cartesian3.multiplyByScalar(forward, -60, forward) //后退60m
-  //   Cesium.Cartesian3.add(offset, forward, offset)
-
-  //   Cesium.Cartesian3.multiplyByScalar(right, 20, right)
-  //   Cesium.Cartesian3.add(offset, right, offset)
-
-  //   Cesium.Cartesian3.multiplyByScalar(up, 30, up)
-  //   Cesium.Cartesian3.add(offset, up, offset)
-
-
-  //   // 4. 相机飞到骑手斜后上方
-  //   this.viewer.camera.flyTo({
-  //     destination: Cesium.Cartesian3.add(
-  //       riderPos,
-  //       offset,
-  //       new Cesium.Cartesian3()
-  //     ),
-  //     orientation: {
-
-  //     },
-  //     duration: 1
-  //   })
-  // }
 
   public setCameraBehindRider(
     getPosition: () => Cesium.Cartesian3,

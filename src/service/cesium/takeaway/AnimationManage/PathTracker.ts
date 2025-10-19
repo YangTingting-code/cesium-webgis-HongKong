@@ -1,7 +1,7 @@
 //PathTracker 是“路径状态协调者”，PathService 是“路径执行者”。
-import type { SegmentType, CombinedOrder } from '@/views/cesium/toolbar/takeaway/interface'
-import { type PathService } from '@/views/cesium/toolbar/takeaway/service/PathService'
-import { useBucketStore } from '@/views/cesium/toolbar/takeaway/store/bucketStore'
+import type { SegmentType, CombinedOrder } from '@/views/cesium/toolbar/takeaway/interface-nouse'
+import { type PathService } from '@/service/cesium/takeaway/PathManage/PathService'
+import { useBucketStore } from '@/store/takeaway/bucketStore'
 
 export class PathTracker {
   private pathService
@@ -30,7 +30,7 @@ export class PathTracker {
 
 
   public updateFrame(isBack: boolean) {
-    const buckets = this.pathService.updateSegmentsType(this.cumD, isBack)
+    const buckets = this.pathService.getSegmentBuckets(this.cumD, isBack)
 
     if (buckets) {
 
@@ -58,7 +58,6 @@ export class PathTracker {
       this.pathService.updatePathProgressByDistance(this.cumD, this.currentSegs, this.isDataReload)
     }
 
-    // return buckets
   }
 
   public updateRiderPosition(deltaSeconds: number, isDataReload: boolean) {

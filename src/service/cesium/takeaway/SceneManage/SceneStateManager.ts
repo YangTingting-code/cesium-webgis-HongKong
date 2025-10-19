@@ -1,11 +1,11 @@
 import * as Cesium from 'cesium'
 import { AnimationService } from '../AnimationManage/AnimationService'
-import { PointService } from '@/views/cesium/toolbar/takeaway/service/PointService'
-import { PathService } from '@/views/cesium/toolbar/takeaway/service/PathService'
-import type { CombinedOrder, SegmentType, DeliveryOrder } from '@/views/cesium/toolbar/takeaway/interface'
+import { PointService } from '@/service/cesium/takeaway/PointManage/PointService'
+import { PathService } from '../PathManage/PathService'
+import type { CombinedOrder, SegmentType, DeliveryOrder } from '@/views/cesium/toolbar/takeaway/interface-nouse'
 
 // import { getSequOrders } from '../utils/sequOrders'
-import { registerServices, clearServices } from '@/views/cesium/toolbar/takeaway/service/GlobalServices'
+import { registerServices, clearServices } from '@/service/cesium/takeaway/GlobalServices'
 import { useOrderStore } from '@/views/rightPanel/top/store/orderStore'
 
 import { ScenePersistence } from '@/service/cesium/takeaway/SceneManage/ScenePersistence'
@@ -193,7 +193,7 @@ export class SceneStateManager {
     const riderPosOri = ScenePersistence.getRiderPosOri()
 
     if (riderPosOri) {
-      this.pathService.recreatRiderModel(riderPosOri.riderPos, riderPosOri.riderOri)
+      this.pathService.restoreRiderModel(riderPosOri.riderPos, riderPosOri.riderOri)
     }
     //路径数据设置 
     if (!this.combinedOrder || !this.orderStepSegments || !this.order0StartIso) return

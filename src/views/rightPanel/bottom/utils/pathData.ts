@@ -1,5 +1,5 @@
 import type { Position } from '@/interface/globalInterface'
-import { OrderStore } from '@/views/cesium/toolbar/takeaway/db/OrderStore'
+import { OrderStore } from '@/data/takeaway/OrderStore'
 import { type Map, type GeoJSONSource } from 'mapbox-gl'
 
 const orderStore = new OrderStore()

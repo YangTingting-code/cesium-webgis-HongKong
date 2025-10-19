@@ -79,7 +79,7 @@
 import {onMounted, onUnmounted, ref, watch} from 'vue'
 import {useOrderStore} from './store/orderStore'
 
-import {useSceneStore} from '@/views/cesium/toolbar/takeaway/store/sceneStore'
+import {useSceneStore} from '@/store/takeaway/sceneStore'
 import {useCombinedControlStore } from '@/store/combinedControlStore'
 
 import type {SceneStateManager} from '@/service/cesium/takeaway/SceneManage/SceneStateManager'

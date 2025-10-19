@@ -1,5 +1,5 @@
 import * as Cesium from 'cesium'
-import type { DeliveryOrder, NodePoint } from '../interface'
+import type { DeliveryOrder, NodePoint } from '../interface-nouse'
 import InfoPopup from './InfoPopup'
 import { throttle } from 'lodash-es';
 import { getIndexByLnglat } from '../utils/sequOrders'
