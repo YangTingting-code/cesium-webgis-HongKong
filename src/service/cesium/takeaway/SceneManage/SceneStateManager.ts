@@ -2,11 +2,11 @@ import * as Cesium from 'cesium'
 import { AnimationService } from '../AnimationManage/AnimationService'
 import { PointService } from '@/service/cesium/takeaway/PointManage/PointService'
 import { PathService } from '../PathManage/PathService'
-import type { CombinedOrder, SegmentType, DeliveryOrder } from '@/views/cesium/toolbar/takeaway/interface-nouse'
+import type { CombinedOrder, SegmentType, DeliveryOrder } from '@/interface/takeaway/interface'
 
 // import { getSequOrders } from '../utils/sequOrders'
 import { registerServices, clearServices } from '@/service/cesium/takeaway/GlobalServices'
-import { useOrderStore } from '@/views/rightPanel/top/store/orderStore'
+import { useOrderStore } from '@/store/takeaway/orderStore'
 
 import { ScenePersistence } from '@/service/cesium/takeaway/SceneManage/ScenePersistence'
 import { CameraService } from '@/service/cesium/takeaway/SceneManage/CameraService'
@@ -133,7 +133,6 @@ export class SceneStateManager {
         this.viewer.clock.startTime
       )
     })
-
     if (ScenePersistence.getIsPath()) {
       await this.restoreScene()
     }

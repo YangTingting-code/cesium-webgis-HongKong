@@ -1,5 +1,5 @@
-import { useOrderStore } from '@/views/rightPanel/top/store/orderStore'
-import type { SceneStateManager } from '@/service/cesium/takeaway/SceneStateManager'
+import { useOrderStore } from '@/store/takeaway/orderStore'
+import type { SceneStateManager } from '@/service/cesium/takeaway/SceneManage/SceneStateManager'
 //数据更新后负责订单面板数据的更新
 export function useSceneLifecycle(sceneManager: SceneStateManager) {
   const orderStore = useOrderStore()

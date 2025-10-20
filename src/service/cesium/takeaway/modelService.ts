@@ -1,5 +1,5 @@
 import * as Cesium from 'cesium'
-import riderModel from '@/assets/3dmodel/motor_vespa.glb?url';
+import riderModel from '@/assets/3dmodel/motor_vespa.glb?url'
 import { throttle } from 'lodash-es';
 
 export class ModelService {

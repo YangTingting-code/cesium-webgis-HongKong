@@ -4,11 +4,12 @@ import { TerrainService } from './TerrainService'
 import { PathGeometryService } from './PathGeometryService'
 import { PathRenderService } from './PathRenderService'
 import * as Cesium from 'cesium'
-import { pathUtils } from '@/utils/takeaway/pathUtils'
+import { pathUtils } from '@/utils/toolbar/takeaway/pathUtils'
 import { PathCalculationService } from '@/service/cesium/takeaway/PathCalcu/index'
 import { ModelService } from '@/service/cesium/takeaway/modelService'
-import type { CombinedOrder, SegmentType, SegmentBuckets } from '@/views/cesium/toolbar/takeaway/interface-nouse'
-import type { Position } from '@/interface/globalInterface';
+import type { CombinedOrder, SegmentType, SegmentBuckets } from '@/interface/takeaway/interface'
+import type { Position } from '@/interface/globalInterface'
+import { ScenePersistence } from '../SceneManage/ScenePersistence'
 
 export class PathService {
 
@@ -227,7 +228,7 @@ export class PathService {
     if (startSegIdx == null || endSegIdx == null || startSegIdx >= this.getFlattened().length) return null
 
     if (isDataReload && currentSegs.length < 1) { //显性知道骑手当前是在倒数第二个buckets轨迹？
-      secondLastCurrentSegs = JSON.parse(localStorage.getItem('secondLastCurrentSegs') || '[]')
+      secondLastCurrentSegs = ScenePersistence.getSecondLastCurr()
       startSegIdx = secondLastCurrentSegs[0]
       endSegIdx = secondLastCurrentSegs[secondLastCurrentSegs.length - 1]
     }

@@ -6,17 +6,17 @@
 <script lang="ts" setup>
 import { onMounted, ref, provide, computed, onUnmounted, inject,watch} from 'vue';
 import * as Cesium from 'cesium';
-import { createViewer } from './viewer';
-//mapbox底图
-import { mapbox_navigation_night } from '@/data/layersData';
+import { createViewer } from '../../service/loaders/viewer';
+import {loadDefuat} from '@/service/loaders/index'
+
 //加载建筑
-import { loadOSMBuildings } from './loaders/tileset';
+import { loadOSMBuildings } from '../../service/OSMBuilding/BuildingService';
 import toolbar from './toolbar/index.vue'
+
 const viewerRef = ref<Cesium.Viewer>();
 const tilesetRef = ref<Cesium.Cesium3DTileset>();
-// const isReady = ref(viewerRef.value && tilesetRef.value) //就绪状态
 const isReady = computed(()=>!!viewerRef.value && !!tilesetRef.value) //就绪状态
-// provide("viewerRef,tilesetRef",viewerRef,tilesetRef)
+
 
   const attrsViewer = inject('getViewer') as (viewer:Cesium.Viewer)=>void
 
@@ -34,16 +34,11 @@ const isReady = computed(()=>!!viewerRef.value && !!tilesetRef.value) //就绪�
 onMounted(async () => {
   //创建viewer
   viewerRef.value = await createViewer('cesiumContainer');
-  //添加mapbox底图
-  //暂时注释掉 测试反向过滤
-  // viewerRef.value.scene.imageryLayers.addImageryProvider(
-  //   mapbox_navigation_night //不会存储上一次的样式 每次默认用这个夜间导航底图
-  // );
-  //加载osm 3dbuilding
+  loadDefuat(viewerRef.value,true)//加载默认底图
+
+  //加载osm 3dbuilding Cesium Ion访问失败
   tilesetRef.value = await loadOSMBuildings(viewerRef.value)
 
-
- 
 })
 
 onUnmounted(()=>{
@@ -51,7 +46,6 @@ onUnmounted(()=>{
   viewerRef.value?.destroy()
 })
 
-//暴露viewer给index.vue做底图切换逻辑
 defineExpose({ viewerRef });
 </script>
 

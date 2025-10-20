@@ -59,7 +59,7 @@
         </div>
         <div class="select">
           <label for="timeslot">时间段</label>
-          <el-select id="timeslot" v-model="currentSlotKey" placeholder="选择时间段" size="small">
+          <el-select id="timeslot" v-model="currentSlotKey" placeholder="选择时间段" size="small" popper-class="timeslot-dropdown">
             <el-option value="morning">7点-10点</el-option>
             <el-option value="lunch">10点-14点</el-option>
             <el-option value="afternoon">14点-17点</el-option>
@@ -77,10 +77,10 @@
 
 <script setup lang="ts">
 import {onMounted, onUnmounted, ref, watch} from 'vue'
-import {useOrderStore} from './store/orderStore'
+import {useOrderStore} from '../../../store/takeaway/orderStore'
 
 import {useSceneStore} from '@/store/takeaway/sceneStore'
-import {useCombinedControlStore } from '@/store/combinedControlStore'
+import {useCombinedControlStore } from '@/store/takeaway/combinedControlStore'
 
 import type {SceneStateManager} from '@/service/cesium/takeaway/SceneManage/SceneStateManager'
 import {ScenePersistence} from '@/service/cesium/takeaway/SceneManage/ScenePersistence'
@@ -602,13 +602,12 @@ onUnmounted(()=>{
 
           /* 下拉菜单全局样式 */
           /* 下拉选项样式 */
-          :global(.el-select-dropdown__item) {
+          :global(.timeslot-dropdown .el-select-dropdown__item) {
             font-size: 0.8rem;
             padding: 4px 8px;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #d9faff;
             height: 2.5rem;
           }
         }

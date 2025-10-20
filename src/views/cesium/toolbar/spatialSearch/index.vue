@@ -81,8 +81,8 @@
   import debounce from 'lodash/debounce';
   // import throttle from 'lodash/throttle';
   import * as Cesium from 'cesium';
-  import { CircleSearchController } from './services/CircleSearchController';
-  import { OSMBuildingService } from './services/OSMBuildingService';
+  import { CircleSearchController } from '@/service/cesium/spatialSearch/Circle/CircleSearchController';
+  import { OSMBuildingService } from '@/service/cesium/spatialSearch/OSMBuildingService';
   import { ElMessage, ElMessageBox } from 'element-plus';
   import { saveCameraPos, setCameraPosition,removeCameraListener } from '@/utils/aboutCamera'; // 你之前写的工具
 

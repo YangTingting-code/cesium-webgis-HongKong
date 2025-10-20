@@ -1,6 +1,6 @@
 <template>
+  <!-- v-show="isReady" -->
   <div 
-    v-show="isReady"
     :class="{open:sidebarOpen}"
     class="toggle-btn" 
     @mouseenter="isBtnHover = true"
@@ -9,8 +9,9 @@
   >
     <span> {{ sidebarOpen ? '关闭':'热力图' }} </span>
   </div>
+
+  <!-- v-show="isReady" -->
   <heatmapControler 
-    v-show="isReady"
     :glow="isBtnHover"
     :viewer-ref="viewerRef"
     :class="{open:sidebarOpen}"
@@ -23,18 +24,18 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted,inject,type Ref,ref,watch} from 'vue';
-import { flowWeek } from '@/views/cesium/toolbar/heatmap/service/data/FlowWeek';
-import { loadData } from '@/views/cesium/toolbar/heatmap/db/loadData';
-import {updateHeatmapData } from '@/views/cesium/toolbar/heatmap/heatmapCesiumES6';
+import { flowWeek } from '@/service/cesium/heatmap/FlowWeek';
+import { loadData } from '@/data/heatmap/loadData';
+import {updateHeatmapData } from '@/service/cesium/heatmap/heatmapCesiumES6';
 import * as Cesium from 'cesium';
-import heatmapControler from './components/heatmapControler.vue'
-import type { HeatSnapWithoutId } from '@/views/cesium/toolbar/heatmap/interface';
+import heatmapControler from '@/components/heatmap/HeatmapControler.vue'
+import type { HeatSnapWithoutId } from '@/interface/heatmap/interface';
 import {saveCameraPos,setCameraPosition,removeCameraListener,position2bbox} from '@/utils/aboutCamera' 
 import {
   CesiumHeatmap,
   type HeatmapPoint,
 } from '@/lib/cesium-heatmap-es6-custom';
-import {getFeaturesBBox} from '@/utils/json2Feature'
+import {getFeaturesBBox} from '@/utils/geo/json2Feature'
 
 interface CesiumInjection{
   viewerRef:Ref<Cesium.Viewer>,
@@ -63,16 +64,11 @@ let heatmapOption = {
   date:0,
   regions:['']
 }
-let globalMaxMin:Record<string,RegionStat>
 let globalMax = 2500
 let globalMin = 0
 let lastOption = JSON.parse(localStorage.getItem('lastOption') || "{}")
 const isRegisterCamera = ref(false)
-const panelShow = ref(false)
-const toggle = ()=>{
-  panelShow.value = !panelShow.value
-  // console.log('panelShow',panelShow)
-}
+
 //接收表单数据 并且把string转换成number，把起止时间转换成JulianDate格式的，下一步就是查找本地数据有没有 没有的话就重新计算
 const handleForm = (value:FormType)=>{
   keys.forEach((key)=>{
@@ -100,7 +96,6 @@ const handleForm = (value:FormType)=>{
   }
 }
 const save = (value:FormType)=>{
-  // console.log("保存配置",value);
   localStorage.setItem('heatmapOption',JSON.stringify(value))
 }
 const drawHeatmap = async (value:FormType, forceRedraw=false)=>{
@@ -113,10 +108,10 @@ const drawHeatmap = async (value:FormType, forceRedraw=false)=>{
     JSON.stringify(clock.startTime.clone()) !== JSON.stringify(startTime) ||
     JSON.stringify(clock.stopTime.clone()) !== JSON.stringify(stopTime) ||
     JSON.stringify(lastOption) !== JSON.stringify(heatmapOption)
+    
   if(needRedraw){//刷新回来 时间轴我没有做缩放 所以会进入到这里重绘
     clearHeatmap() //如果没有热力图需要清除 clearHeatmap会直接返回 不会做任何操作 
     await initTime(heatmapOption,startTime,stopTime,JSON.parse(localStorage.getItem('heatmapVisited')||"false"))
-    // save(value) // 保存数据到本地
   }else{ //不用重绘 直接打开时间播放 有bug 有可能是刷新之后不用重绘制 此时是否播放动画需要根据刷新前的状态来决定
     clock.shouldAnimate = true 
   }
@@ -133,7 +128,7 @@ localStorage.setItem('heatmapRegions',JSON.stringify(value.regions))
   isRegisterCamera.value = true
 }
 
-// const heatLayersMap:Record<string,CesiumHeatmap> = {}
+
 let heatLayer :CesiumHeatmap|undefined
 const isRemoved = ref(false)
 const pause = ()=>{ //暂停热力图的绘制
@@ -165,8 +160,6 @@ const {viewerRef,isReady} = inject<CesiumInjection>("cesium")!
 
 const date2slot = (d: Date) => {
   const day = (d.getDay() || 7) - 1; // 周一=0, 周日f=6
-  // console.log('day',day)
-  // console.log('day * 24 + d.getUTCHours()',day * 24 + d.getHours())
   return day * 24 + d.getHours();
 };
 const initClock= (startTime:Cesium.JulianDate,endTime:Cesium.JulianDate)=>{
@@ -199,7 +192,7 @@ const getRegionPoints = (snap:any, regions:Array<string>)=>{
         typeof p.value !== 'number' ||
         isNaN(p.value)
       ) {
-        console.warn('❌ 第', idx, '个点非法:', p);
+        console.warn('❌ 第', i, '个点非法:', p);
         continue
       }
       points.push({x: p.lng, y: p.lat, value:p.value})//符合条件推入数组
@@ -277,39 +270,7 @@ async function initTime(heatmapOptions:any,startTime:Cesium.JulianDate,endTime:C
   clock.onTick.addEventListener(listener)
   tickRemoved = () => clock.onTick.removeEventListener(listener)
 }
-interface RegionStat {
-  max:number,
-  min:number
-}
-//直接用固定的Max 和 Min 这两个也用不上了
-async function getMaxMinRegion(regions:string[]):Promise<Record<string,RegionStat>>{
-  const globalMaxMin:Record<string,RegionStat> = {}
-  regions.forEach(r=>{
-    globalMaxMin[r] = {max:-Infinity,min:Infinity}
-  })
 
-  for(let i = 0; i < 168; i++){ //计算所有时间段 各个区的max 和 min
-    const snap : HeatSnapWithoutId | null = await flowWeek.heatStore.getItem(`slot:${i}`)
-    if(!snap) continue
-    for(const p of snap.points){
-      if(!regions.includes(p.region)) continue
-      if(typeof p.value !== 'number') continue
-      const stat = globalMaxMin[p.region]
-      stat.max = Math.max(stat.max, p.value)
-      stat.min = Math.max(stat.min, p.value)
-    }
-  }
-  return globalMaxMin
-}
-function selectedMax(regions:string[]){
-  let max = -Infinity
-  let min = Infinity
-  for(const f of regions){
-    max = globalMaxMin[f].max > max ? globalMaxMin[f].max:max
-    min = globalMaxMin[f].min > min ? globalMaxMin[f].min:min
-  }
-  return {max,min}
-}
 onMounted(async () => {
   // 1. 判断本地是否存储数据 没有的话就存储 但是不会影响后面逻辑 因为并没有 await 等待
   const tester = new loadData();
@@ -349,7 +310,7 @@ watch(viewerRef,()=>{
   width: 2.5rem;
   height: 6rem;
   background-color: rgba(57, 147, 138, 0.75);
-  /* outline: .0625rem solid rgba(0, 255, 255, 0.8); */
+ 
   color: white;
   display: flex;
   align-items: center;

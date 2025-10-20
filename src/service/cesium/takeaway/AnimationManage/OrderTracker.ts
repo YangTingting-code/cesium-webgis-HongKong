@@ -1,5 +1,5 @@
 // 专门负责“里程碑追踪与订单状态更新”
-import { useOrderStore } from '@/views/rightPanel/top/store/orderStore'
+import { useOrderStore } from '@/store/takeaway/orderStore'
 import { type Milestone } from '@/interface/takeaway/interface'
 export class OrderTracker {
   private orderStore = useOrderStore()

@@ -94,7 +94,8 @@ export function saveCameraPos(viewer: Viewer, isRegister: Ref<boolean>) {
   if (isRegister.value) return; //如果已经注册过就马上返回
   beforeUnloadHandler = () => {
     const pos = getcameraPosInfo(viewer); // 你已经有这个函数
-    localStorage.setItem('cameraBeforeReload', JSON.stringify(pos));
+    sessionStorage.setItem('cameraBeforeReload', JSON.stringify(pos));
+    // localStorage.setItem('cameraBeforeReload', JSON.stringify(pos));
   }
   window.addEventListener('beforeunload', beforeUnloadHandler);
   // isRegister.value = true

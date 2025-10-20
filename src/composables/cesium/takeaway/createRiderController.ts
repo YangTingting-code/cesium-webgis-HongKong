@@ -3,7 +3,7 @@
 调用 SceneStateManager.switchRider()
 同步更新 UI 状态 */
 
-import { useCombinedControlStore } from '@/store/combinedControlStore'
+import { useCombinedControlStore } from '@/store/takeaway/combinedControlStore'
 import type { SceneStateManager } from '@/service/cesium/takeaway/SceneManage/SceneStateManager'
 import { useSceneLifecycle } from './useSceneLifecycle'
 import { ref } from 'vue'

@@ -26,7 +26,7 @@ export default defineConfig({
             console.log('代理请求:', req.url)
           })
         }
-      }
+      },
     }
   },
   define: {

@@ -2,6 +2,7 @@ import { Viewer } from 'cesium'
 import { ClockController } from './ClockController'
 import type { PathTracker } from './PathTracker'
 import type { OrderTracker } from './OrderTracker'
+import { ScenePersistence } from '../SceneManage/ScenePersistence'
 
 export class TickLoop {
   private listener: any
@@ -32,7 +33,7 @@ export class TickLoop {
   start() {
     let useLastElapsed = false
     let lastElapsed: number
-    const isPath = JSON.parse(localStorage.getItem('isPath') || 'false')
+    const isPath = ScenePersistence.getIsPath()
 
     if (isPath) {
       useLastElapsed = true

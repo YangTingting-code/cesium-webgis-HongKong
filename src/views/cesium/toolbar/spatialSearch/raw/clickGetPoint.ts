@@ -1,9 +1,9 @@
 import * as Cesium from 'cesium';
 import { ref, type Ref, watch, reactive, markRaw, type Reactive } from 'vue';
 // import { usePointsStore } from '@/store/useMapStore';
-import { correctPosition } from '@/utils/correctPosition';
+import { correctPosition } from '@/utils/toolbar/spatialSearch/correctPosition';
 import debounce from 'lodash/debounce';
-import DynamicPopup from '@/views/cesium/toolbar/spatialSearch/services/DynamicPopup';
+import DynamicPopup from '@/service/cesium/spatialSearch/DynamicPopup';
 import {
   setCameraPosition,
   saveCameraPos,

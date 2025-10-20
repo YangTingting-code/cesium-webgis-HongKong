@@ -1,7 +1,8 @@
 //PathTracker 是“路径状态协调者”，PathService 是“路径执行者”。
-import type { SegmentType, CombinedOrder } from '@/views/cesium/toolbar/takeaway/interface-nouse'
+import type { SegmentType, CombinedOrder } from '@/interface/takeaway/interface'
 import { type PathService } from '@/service/cesium/takeaway/PathManage/PathService'
 import { useBucketStore } from '@/store/takeaway/bucketStore'
+import { ScenePersistence } from '../SceneManage/ScenePersistence'
 
 export class PathTracker {
   private pathService
@@ -9,7 +10,6 @@ export class PathTracker {
   private lastCurrentSegs: number[] = []
   private isDataReload: boolean = false
   private cumD: number = 0
-  private hasSetCamera = false
 
   private bucketStore = useBucketStore()
 
@@ -22,9 +22,10 @@ export class PathTracker {
   }
 
   public isSetCamera() {
-    if (localStorage.getItem('isPath') === 'false' && !this.hasSetCamera) {
+    if (ScenePersistence.getIsPath() &&
+      !(ScenePersistence.getLastElapsed() > 0)
+    ) {
       this.pathService.setCameraByRiderPosOri()
-      this.hasSetCamera = true
     }
   }
 
@@ -43,8 +44,10 @@ export class PathTracker {
       }
 
       if (buckets.currentSegs.length === 0 && this.lastCurrentSegs) { //不要数据回显的时候存入undefined lastCurrentSegs 污染了
-        if (JSON.parse(localStorage.getItem('secondLastCurrentSegs') || '[]').length > 0) return //如果已经存过就不要再存 切换订单的时候再清除
-        localStorage.setItem('secondLastCurrentSegs', JSON.stringify(this.lastCurrentSegs))
+
+        if (ScenePersistence.getSecondLastCurr().length > 0) return //如果已经存过就不要再存 切换订单的时候再清除
+
+        ScenePersistence.setSecondLastCurr(this.lastCurrentSegs)
       }
 
       if (buckets.currentSegs?.length) {
@@ -77,6 +80,5 @@ export class PathTracker {
     this.lastCurrentSegs = []
     this.cumD = 0
     this.isDataReload = false
-    this.hasSetCamera = false
   }
 }

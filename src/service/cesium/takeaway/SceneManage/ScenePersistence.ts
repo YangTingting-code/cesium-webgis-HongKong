@@ -1,10 +1,19 @@
 //步骤 1：新建 ScenePersistence.ts（封装 localStorage）
 //把所有 localStorage.get/set/remove 集中起来，行为不变，调用点简化。
-
+// 会话态 和 长期态，现在统一修改成会话态
 type Json = any //这是什么? 返回任意
 
-//读取
+//读取 
 const read = (key: string): Json => {
+  try {
+    const raw = sessionStorage.getItem(key)
+    // const raw = localStorage.getItem(key)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+const readLocal = (key: string): Json => {
   try {
     const raw = localStorage.getItem(key)
     return raw ? JSON.parse(raw) : null
@@ -14,10 +23,17 @@ const read = (key: string): Json => {
 }
 //写
 const write = (key: string, value: Json) => {
+  sessionStorage.setItem(key, JSON.stringify(value))
+}
+const writeLocal = (key: string, value: Json) => {
   localStorage.setItem(key, JSON.stringify(value))
 }
 //删除
 const del = (key: string) => {
+  sessionStorage.removeItem(key)
+}
+
+const delLocal = (key: string) => {
   localStorage.removeItem(key)
 }
 
@@ -30,7 +46,7 @@ export const ScenePersistence = {
   setRiderPosOri(val: Json) {
     write('riderPosOri', val)
   },
-  removeRiderOri() {
+  removeRiderPosOri() {
     del('riderPosOri')
   },
 
@@ -79,13 +95,24 @@ export const ScenePersistence = {
 
   //订单控制面板
   getCombinedorderControl() {
-    return read('combinedorderControl')
+    //订单面板数据是长期的
+    return readLocal('combinedorderControl')
   },
   setCombinedorderControl(val: Json) {
-    write('combinedorderControl', val)
+    writeLocal('combinedorderControl', val)
   },
   removeCombinedorderControl() {
-    del('combinedorderControl')
+    delLocal('combinedorderControl')
+  },
+
+  getSecondLastCurr() {
+    return read('secondLastCurrentSegs')
+  },
+  setSecondLastCurr(val: Json) {
+    write('secondLastCurrentSegs', val)
+  },
+  removeSecondLastCurr() {
+    del('secondLastCurrentSegs')
   },
 
   clearSessionKeys() {

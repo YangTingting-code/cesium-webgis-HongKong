@@ -1,5 +1,6 @@
 import * as Cesium from 'cesium'
 import type { SegmentType } from '@/interface/takeaway/interface'
+import { ScenePersistence } from '../SceneManage/ScenePersistence'
 export class PathCalculationService {
   private order0: any = null
   private stepSegments: Record<string, SegmentType[]> = {} //外界传入 stepSegments
@@ -18,7 +19,7 @@ export class PathCalculationService {
     this.stepSegments = stepSegments
 
     //看此时是否是数据回显阶段
-    const isPath = JSON.parse(localStorage.getItem('isPath') || 'false')
+    const isPath = ScenePersistence.getIsPath()
 
     // 初始化骑手位置为路径起点 //如果此时不是数据回显阶段 才初始化骑手位置为路径起点
     if (order0 && order0.fullpath && order0.fullpath.length > 0 && !isPath) {

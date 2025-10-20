@@ -1,6 +1,10 @@
 //天地图矢量
 const tdt_key = import.meta.env.VITE_TIANDITU_TOKEN;
 import * as Cesium from 'cesium';
+
+Cesium.Ion.defaultAccessToken = import.meta.env.VITE_CESIUMION_TOKEN
+export const Cesium_Ion = Cesium.ImageryLayer.fromWorldImagery({})
+
 export const img_tdt = new Cesium.WebMapTileServiceImageryProvider({
   url: 'http://{s}.tianditu.com/vec_w/wmts?tk=' + tdt_key,
   layer: 'vec',
@@ -20,7 +24,16 @@ export const img_cia = new Cesium.WebMapTileServiceImageryProvider({
   subdomains: ['t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7'],
 });
 
-//mapbox
+//osm矢量
+const osm = new Cesium.OpenStreetMapImageryProvider({
+  url: 'https://tile.openstreetmap.org/'
+})
+
+// mapbox 栅格影像底图 
+export const mapbox_terrain_v2 = new Cesium.MapboxImageryProvider({
+  mapId: 'mapbox.mapbox-terrain-v2',
+  accessToken: import.meta.env.VITE_MAPBOX_TOKEN
+})
 //设置mapbox矢量底图
 export const mapbox_navigation_night = new Cesium.MapboxStyleImageryProvider({
   styleId: 'navigation-night-v1',
@@ -50,10 +63,15 @@ export const mapbox_dark = new Cesium.MapboxStyleImageryProvider({
 const pics = import.meta.glob('@/assets/mapboxLayersPic/*.png', {
   eager: true,
   import: 'default',
+})
+
+const picCesIon = import.meta.glob('@/assets/tilesetPic/*.png', {
+  eager: true,
+  import: 'default',
 });
 
 // 2. 组装成自己需要的结构
-export const mapboxPicUrl = {
+export const mapboxPicUrl: Record<string, string> = {
   mapbox_navigation_night: pics[
     '/src/assets/mapboxLayersPic/mapbox-navigation-night.png'
   ] as string,
@@ -69,6 +87,21 @@ export const mapboxPicUrl = {
   mapbox_light: pics['/src/assets/mapboxLayersPic/mapbox-light.png'] as string,
   mapbox_dark: pics['/src/assets/mapboxLayersPic/mapbox-dark.png'] as string,
 };
+export const mapstyleDictionary: Record<string, Cesium.ImageryProvider | Cesium.ImageryLayer> = {
+  'mapbox_navigation_night': mapbox_navigation_night,
+  'mapbox_navigation_day': mapbox_navigation_day,
+  'mapbox_streets': mapbox_streets,
+  'mapbox_outdoors': mapbox_outdoors,
+  'mapbox_light': mapbox_light,
+  'mapbox_dark': mapbox_dark,
+  'Cesium_Ion': Cesium_Ion
+}
+
+export const tilesetPicUrl: Record<string, string> = {
+  Cesium_Ion: picCesIon[
+    '/src/assets/tilesetPic/Cesium_Ion.png'
+  ] as string
+}
 
 //高德矢量，高德位置偏移
 export const gaode = new Cesium.UrlTemplateImageryProvider({
@@ -108,6 +141,13 @@ export const mapboxData = [
   },
 ];
 
+export const tilesetData = [
+  {
+    tilesetId: 'Cesium_Ion',
+    description: 'Cesium Ion',
+    url: tilesetPicUrl.Cesium_Ion
+  }
+]
 export const getStyleUrlById: Record<string, string> = {
   mapbox_navigation_night: 'mapbox://styles/mapbox/navigation-night-v1',
   mapbox_navigation_day: 'mapbox://styles/mapbox/navigation-day-v1',
@@ -193,3 +233,6 @@ export function getPathVisualScheme(styleId: keyof typeof pathColorScheme) {
     endColor: point.end,
   }
 }
+
+//栅格影像
+

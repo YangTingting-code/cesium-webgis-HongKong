@@ -139,12 +139,12 @@ async function startRiderAnimation() {
     //骑手初始化 
     pathService!.createRiderModel()
 
+    ScenePersistence.setIsPath(true) //点击开始绘制 在本地存入 "已绘制"
+
     // 开始动画
     animationService!.startAnimation(combinedOrder.duration, order0StartIso)
 
     // followRider() //手动让相机相机跟随 通知弹窗隐藏
-    
-    localStorage.setItem('isPath','true') //点击开始绘制 在本地存入 "已绘制"
 
     console.log('骑手动画启动成功')
     

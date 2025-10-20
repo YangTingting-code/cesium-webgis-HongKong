@@ -32,7 +32,7 @@ import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import { ElSlider } from 'element-plus'
 import 'element-plus/es/components/slider/style/css'
-import { flowWeek } from '@/views/cesium/toolbar/heatmap/service/data/FlowWeek'
+import { flowWeek } from '@/service/cesium/heatmap/FlowWeek'
 const size="small"
 const chartEl = ref<HTMLDivElement>()
 const chartWrapper = ref<HTMLDivElement>()

@@ -4,7 +4,7 @@ import {
   queryOSM,
   updateChartDataAndHighlight,
 } from '@/views/cesium/interactions/spatialSearch/raw/OSMBuilding';
-import DynamicPopup from '@/views/cesium/toolbar/spatialSearch/services/DynamicPopup';
+import DynamicPopup from '@/service/cesium/spatialSearch/DynamicPopup';
 import { reactive, ref } from 'vue';
 /* interface BuildingProfile {
   id: number; // OSM id

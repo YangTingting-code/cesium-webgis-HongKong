@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import {convertToHeatmapData,convertToLineArea,renderLineArea} from './utils/chartDataUtils'
+import {convertToHeatmapData,convertToLineArea,renderLineArea} from '@/utils/leftPanel/chartDataUtils'
 
 onMounted(async ()=>{
   const heatmapData = await convertToHeatmapData()

@@ -7,11 +7,12 @@
 <script lang="ts" setup>
 import mapboxgl from 'mapbox-gl'
 import { onMounted, watch } from 'vue'
-import {getCurrentCombinedLngLat,prepareLineSource,preparePointSource,setLineData,setPointsData,addDoublePath,addPointsToLayer} from './utils/pathData'
+import {getCurrentCombinedLngLat,prepareLineSource,preparePointSource,setLineData,setPointsData,addDoublePath,addPointsToLayer} from '@/utils/rightPanel/pathData'
 import * as turf from '@turf/turf'
-import {useCombinedControlStore } from '@/store/combinedControlStore'
+import {useCombinedControlStore } from '@/store/takeaway/combinedControlStore'
 import {useMapboxStyleStore } from '@/store/mapStyleStore'
-import {getPathVisualScheme} from '@/data/layersData'
+import {getPathVisualScheme,getStyleUrlById} from '@/data/layersData'
+import {mapPersistence} from '@/service/loaders/map-persistence'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 const combinedControlStore = useCombinedControlStore()
@@ -19,16 +20,23 @@ const mapboxStyleStore = useMapboxStyleStore()
 
 //注意要写在 onMounted 中, 不然容器还没有挂载
 onMounted(async ()=>{
+  const mapId = mapPersistence.getMapstyle()
+  const keys = Object.keys(getStyleUrlById)
+  let styleId 
+  if(!keys.includes(mapId)){
+    styleId = getStyleUrlById['mapbox_navigation_night']
+  }else{
+    styleId = getStyleUrlById[mapId]
+  }
   const pathMapbox = new mapboxgl.Map({
-  container:'mapbox-container',
-  center:[113,22],
-  zoom:9,
-  style: 'mapbox://styles/mapbox/navigation-night-v1',
-})
+    container:'mapbox-container',
+    center:[113,22],
+    zoom:9,
+    style: styleId,
+  })
 
 //持久化问题：数据直接从本地拉取，刷新之后数据依旧回显，切换数据不会更新
 //加载一条轨迹线
-  
   let combinedorderData = JSON.parse(localStorage.getItem('combinedorderControl') || '{}')
 
   let lnglat2D = await getCurrentCombinedLngLat(combinedorderData) //[ [lng1,lat1], [lng2,lat2], ... ]
@@ -66,7 +74,6 @@ onMounted(async ()=>{
     //添加起点和终点
     addPointsToLayer(pathMapbox,startEndLayerId,startEndSourceId,scheme.startColor,scheme.endColor)
 
-  
     // 监听组合订单数据切换
     watch(()=>combinedControlStore.getCurrentStatus(),async ()=>{
       combinedorderData = JSON.parse(localStorage.getItem('combinedorderControl')||'{}') 
@@ -77,6 +84,7 @@ onMounted(async ()=>{
         return
       }
       //利用id获取数据源
+      
       const lineSource = pathMapbox.getSource(sourceId) as mapboxgl.GeoJSONSource
       const pointsSource = pathMapbox.getSource(startEndSourceId) as mapboxgl.GeoJSONSource
       
@@ -99,9 +107,10 @@ onMounted(async ()=>{
 
     //监听图层切换
     watch(()=>mapboxStyleStore.isUpdated,()=>{
-      const style = mapboxStyleStore.getCurrentMapboxStyleId()
+      let style = mapboxStyleStore.getCurrentMapboxStyleId()
+
       if(!style){
-        console.log('styleUrl没有准备好')
+        return 
       }
       pathMapbox.setStyle(style)
       
@@ -131,7 +140,6 @@ onMounted(async ()=>{
   })
    
 })
-
 
 </script>
 
