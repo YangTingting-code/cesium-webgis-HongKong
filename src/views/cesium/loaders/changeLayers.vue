@@ -71,7 +71,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { mapboxPicUrl, mapboxData,tilesetPicUrl, tilesetData } from '@/data/layersData';
 import {useMapboxStyleStore} from '@/store/mapStyleStore'
-import {mapPersistence} from '@/service/loaders/map-persistence'
+import {mapPersistence} from '@/service/loaders/load-persistence'
 
 //底图风格Store 
 const mapboxStyleStore = useMapboxStyleStore()

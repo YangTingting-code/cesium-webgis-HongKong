@@ -6,19 +6,20 @@
       <el-select
         v-model="pickedName"
         placeholder="选择色带"
+        popper-class="ramp-dropdown"
         @change="apply"
       >
         <!-- 输入框前缀：未选择时显示默认色带 -->
-        <template #prefix>
+        <!-- <template #prefix>
           <div 
             v-if="!pickedName"
             class="ramp-mini"
             :style="{background:gradientBar(defaultRamp)}"
           />
-        </template>
+        </template> -->
 
         <!-- 输入框选中显示 -->
-        <template #label="{value}">
+        <!-- <template #label="{value}">
           <div class="ramp-option">
             <span class="name"> {{ value }}</span>
             <span
@@ -26,7 +27,7 @@
               :style="{background:gradientBar(ramps.find(r=>r.name === value)!)}"
             />
           </div>
-        </template>
+        </template> -->
 
         <!-- 下拉菜单选项 -->
         <el-option
@@ -39,8 +40,9 @@
             <span class="name">{{ r.name }}</span>
             <span
               class="ramp-bar"
-              :style="{ background: gradientBar(r) }"
             />
+            
+              <!-- :style="{ background: gradientBar(r) }" -->
           </div>
         </el-option>
       </el-select>
@@ -49,70 +51,100 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref,onMounted,watch} from 'vue'
 import { rampToGradient } from '@/utils/toolbar/heatmap/rampToGradient'
 import { ramps } from '@/utils/toolbar/heatmap/colorRamps'
+import {heatmapPersistence} from '@/service/cesium/heatmap/heatmap-persistence'
 
 
-const emit = defineEmits<{ apply: [gradient: Record<number, string>] }>()
+const emit = defineEmits<{ apply: [gradient: Record<number, string>], saved }>()
 
 const pickedName = ref('')
-const defaultRamp = ramps[0]
-
-function gradientBar(r: typeof ramps[0]) {
-  const g = rampToGradient(r, 20)
-  const stops = Object.keys(g)
-    .map(pos => `${g[pos]} ${(+pos * 100).toFixed(1)}%`)
-    .join(',')
-  return `linear-gradient(to right, ${stops})`
-}
 
 function apply() {
   if(!pickedName.value) return //什么都没选
   const ramp = ramps.find(r => r.name === pickedName.value)!
+  heatmapPersistence.setRamp(ramp)
+  heatmapPersistence.setGradient(rampToGradient(ramp, 10))
+
   emit('apply', rampToGradient(ramp, 10))
 }
+
+const props = defineProps<{clearSelect:boolean,saveRamp:boolean,applyRamp:boolean}>()
+//清空热力图的时候把当前选择的清空
+watch(()=>props.clearSelect,(newValue)=>{
+  if(newValue){
+      pickedName.value = ''
+      emit('saved')
+    }
+})
+
+watch(()=>props.saveRamp,(newValue)=>{
+  if(newValue && pickedName.value){
+      heatmapPersistence.saveLocalRamp(pickedName.value)
+    }
+})
+
+//应用持久化的色带
+watch(()=>props.applyRamp,(newValue)=>{
+  if(newValue){
+      const localRamp = heatmapPersistence.getLocalRamp()
+      if(localRamp) {
+        pickedName.value = localRamp
+        apply()
+      }
+    }
+})
+
+onMounted(()=>{
+    const ramp = heatmapPersistence.getRamp()
+    //如果不是刷新回显热力图那就回显本地保存的色带
+    const localRamp = heatmapPersistence.getLocalRamp()
+  
+    if(ramp){
+      pickedName.value = ramp.name
+      //保存当前的gradient到本地
+      heatmapPersistence.setGradient(rampToGradient(ramp, 10))
+    }else if(localRamp){
+      pickedName.value = localRamp
+      // heatmapPersistence.setGradient(rampToGradient(locaRramp, 10))
+      apply()
+    }
+  })
+
 </script>
 
 <style lang="scss" scoped>
 .ramp {
-  width: 40%;
-
-  :deep(.el-select__wrapper) {
-    min-height: 26px;
-    line-height: 26px;
-    font-size: 10px;
-    padding: 0;
+  width: 70%;
+  position: relative;
+  top: -18px;
+  :deep(.el-form-item__label){
+    padding: 0 21px 0 0 !important;
   }
-
-  .ramp-mini {
-    position: relative;
-    left: -10px;
-    width: 100px;
-    height: 24px;
-    border-radius: 2px;
+  
+  .el-select{
+    :deep(.el-select__placeholder.is-transparent){
+      color: rgba(235, 245, 255, 0.808);
+    }
+    :deep(.el-select__wrapper) {
+      min-height: 26px;
+      line-height: 26px;
+      font-size: 10px;
+      padding: 0 12px 0 12px;
+    }
+  //改变下拉框要素样式 多加一个popper-class 使其只控制这个一个类
+    :global(.ramp-dropdown .el-select-dropdown__item){
+      font-size: 0.9rem;
+      text-align: center;
+      align-items: center;
+      line-height: 2.0rem;
+      min-height: 1.2rem;
+      height: 2.0rem;
+    }
   }
-
-  /* ✅ 修正穿透写法 */
-  :deep(.ramp-option) {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 160px;
-  }
-
-  :deep(.ramp-option .name) {
-    flex: 0 0 60px;
-    font-size: 12px;
-  }
-
-  :deep(.ramp-option .ramp-bar) {
-    flex: 1;
-    height: 12px;
-    border-radius: 6px;
-    margin-left: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-  }
+  
+  
 }
 </style>
 

@@ -12,7 +12,7 @@ import * as turf from '@turf/turf'
 import {useCombinedControlStore } from '@/store/takeaway/combinedControlStore'
 import {useMapboxStyleStore } from '@/store/mapStyleStore'
 import {getPathVisualScheme,getStyleUrlById} from '@/data/layersData'
-import {mapPersistence} from '@/service/loaders/map-persistence'
+import {mapPersistence} from '@/service/loaders/load-persistence'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 const combinedControlStore = useCombinedControlStore()
@@ -124,7 +124,6 @@ onMounted(async ()=>{
         const mapboxStyleId = mapboxStyleStore.getMapboxStyleId() 
         scheme = getPathVisualScheme(mapboxStyleId)
         // 添加轨迹线数据源
-        console.log('scheme',scheme)
         prepareLineSource({mapbox:pathMapbox,sourceId,coordinates:lnglat2D})
         addDoublePath(pathMapbox,'path',sourceId,{width:10,colorGlow:scheme.glowColor,mainColorFrom:scheme.gradientFrom,mainColorTo:scheme.gradientTo})
 

@@ -150,6 +150,7 @@ export class SceneStateManager {
    */
   private async loadRiderData(region: string, timeslot: number, riderId: string) {
     const bundle = await this.dataService.loadRiderData(region, timeslot, riderId)
+
     if (!bundle) {
       console.log('骑手数据没有准备好')
       return
@@ -275,6 +276,7 @@ export class SceneStateManager {
 
   public async initializeOrders(region: string, timeslot: number) {
     const bundle = await this.loadRiderDataByRegionTime(region, timeslot)
+
     await this.initialize()
 
     return bundle

@@ -1,7 +1,9 @@
 import {
   mapbox_navigation_night,
-  Cesium_Ion
+  mapbox_terrain_v2,
+  standard_satellite
 } from '@/data/layersData'
+
 import { modifyMap, mapPersistence } from './index'
 
 import * as Cesium from 'cesium'
@@ -13,10 +15,9 @@ export function loadDefuat(viewer: Cesium.Viewer, loadTile: boolean) {
   if (loadTile) {
     //默认添加CesiumIon影像
     if (!mapPersistence.getMapstyle()) { //没有存东西的时候才需要初始化
-      viewer.scene.imageryLayers.add(Cesium_Ion)
-      mapPersistence.setMapstyle('Cesium_Ion')
+      viewer.scene.imageryLayers.addImageryProvider(standard_satellite)
+      mapPersistence.setMapstyle('standard_satellite')
     }
-
     modifyMap(viewer, true)
 
   } else {

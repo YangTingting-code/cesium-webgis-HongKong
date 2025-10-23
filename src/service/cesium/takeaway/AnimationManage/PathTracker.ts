@@ -45,7 +45,8 @@ export class PathTracker {
 
       if (buckets.currentSegs.length === 0 && this.lastCurrentSegs) { //不要数据回显的时候存入undefined lastCurrentSegs 污染了
 
-        if (ScenePersistence.getSecondLastCurr().length > 0) return //如果已经存过就不要再存 切换订单的时候再清除
+        //如果之前存过就不要再存
+        if (ScenePersistence.getSecondLastCurr() && ScenePersistence.getSecondLastCurr().length > 0) return //如果已经存过就不要再存 切换订单的时候再清除
 
         ScenePersistence.setSecondLastCurr(this.lastCurrentSegs)
       }

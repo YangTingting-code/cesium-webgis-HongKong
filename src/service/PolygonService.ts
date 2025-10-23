@@ -6,8 +6,14 @@ import {
 } from '@/interface/globalInterface';
 import { multiPolyCenter } from '@/utils/geo/getFeaturesCenter';
 import * as Cesium from 'cesium';
-export async function drawPolygon(viewer: Cesium.Viewer) {
-  const features = await getHKWFS();
+
+export async function drawPolygon(viewer: Cesium.Viewer, bounds: {
+  south: number;
+  west: number;
+  north: number;
+  east: number;
+}) {
+  const features = await getHKWFS(bounds);
   //1.处理坐标 1.1一维坐标 二维存放不同面的
   const temp: number[][] = [];
   //获取多个多边形的质心 1.准备存放多边形的数组

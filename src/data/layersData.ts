@@ -2,8 +2,9 @@
 const tdt_key = import.meta.env.VITE_TIANDITU_TOKEN;
 import * as Cesium from 'cesium';
 
-Cesium.Ion.defaultAccessToken = import.meta.env.VITE_CESIUMION_TOKEN
-export const Cesium_Ion = Cesium.ImageryLayer.fromWorldImagery({})
+// Cesium.Ion.defaultAccessToken = import.meta.env.VITE_CESIUMION_TOKEN_NEW
+// export const Cesium_Ion = Cesium.ImageryLayer.fromWorldImagery({})
+
 
 export const img_tdt = new Cesium.WebMapTileServiceImageryProvider({
   url: 'http://{s}.tianditu.com/vec_w/wmts?tk=' + tdt_key,
@@ -34,6 +35,17 @@ export const mapbox_terrain_v2 = new Cesium.MapboxImageryProvider({
   mapId: 'mapbox.mapbox-terrain-v2',
   accessToken: import.meta.env.VITE_MAPBOX_TOKEN
 })
+// mapbox://styles/mapbox/standard-satellite
+export const standard_satellite = new Cesium.MapboxImageryProvider({
+  mapId: 'mapbox.satellite',
+  accessToken: import.meta.env.VITE_MAPBOX_TOKEN
+})
+
+
+export const terrainProvider = await Cesium.CesiumTerrainProvider.fromUrl(
+  'https://data.mars3d.cn/terrain'  // Mars3D 免费地形源（国内可用）
+)
+
 //设置mapbox矢量底图
 export const mapbox_navigation_night = new Cesium.MapboxStyleImageryProvider({
   styleId: 'navigation-night-v1',
@@ -94,7 +106,8 @@ export const mapstyleDictionary: Record<string, Cesium.ImageryProvider | Cesium.
   'mapbox_outdoors': mapbox_outdoors,
   'mapbox_light': mapbox_light,
   'mapbox_dark': mapbox_dark,
-  'Cesium_Ion': Cesium_Ion
+  'mapbox_terrain_v2': mapbox_terrain_v2,
+  'standard_satellite': standard_satellite,
 }
 
 export const tilesetPicUrl: Record<string, string> = {
@@ -148,6 +161,8 @@ export const tilesetData = [
     url: tilesetPicUrl.Cesium_Ion
   }
 ]
+
+//二维底图
 export const getStyleUrlById: Record<string, string> = {
   mapbox_navigation_night: 'mapbox://styles/mapbox/navigation-night-v1',
   mapbox_navigation_day: 'mapbox://styles/mapbox/navigation-day-v1',
@@ -218,6 +233,99 @@ export const pointColorScheme: Record<string, {
     end: '#FF4081',   // 粉红
   }
 }
+
+export const buildingShaderColorScheme: Record<string, {
+  base: [number, number, number],
+  glow: [number, number, number]
+}> = {
+  mapbox_navigation_night: {
+    base: [0.05, 0.1, 0.25], // 深蓝
+    glow: [0.0, 0.9, 1.0],   // 青绿
+  },
+  mapbox_navigation_day: {
+    base: [0.3, 0.5, 0.9],
+    glow: [0.6, 0.3, 1.0],
+  },
+  mapbox_streets: {
+    base: [0.9, 0.6, 0.2],
+    glow: [1.0, 0.4, 0.5],
+  },
+  mapbox_outdoors: {
+    base: [0.3, 0.6, 0.3],
+    glow: [0.0, 0.8, 0.8],
+  },
+  mapbox_light: {
+    base: [0.85, 0.85, 0.85],
+    glow: [1.0, 0.5, 0.8],
+  },
+  mapbox_dark: {
+    base: [0.1, 0.1, 0.2],
+    glow: [0.0, 0.8, 1.0],
+  },
+};
+
+
+export const buildingShaderColorSchemeGrouped = {
+  mapbox_navigation_night: {
+    baseColors: [
+      //表示 vec3(0.1, 0.2, 0.4) js里vec3不存在 就用数组表示 然后用Cesium.Car3作为容器成为三维向量
+      [0.1, 0.2, 0.4],  // 深蓝
+      [0.25, 0.1, 0.4], // 紫蓝
+      [0.05, 0.25, 0.35], // 青灰
+      [0.15, 0.15, 0.45], // 静夜紫
+    ],
+    // glowColor: [0.0, 0.9, 1.0], // 青光
+    glowColor: [0.8, 0.6, 1.0], // 轻微紫光
+  },
+  mapbox_navigation_day: {
+    baseColors: [
+      [0.5, 0.6, 0.9], // 天蓝
+      [0.4, 0.5, 0.8], // 灰蓝
+      [0.7, 0.7, 0.9], // 淡蓝白
+      [0.6, 0.65, 0.85], // 雾蓝
+    ],
+    glowColor: [0.6, 0.3, 1.0], // 紫光
+  },
+  mapbox_streets: {
+    baseColors: [
+      [0.9, 0.7, 0.3], // 暖黄
+      [0.95, 0.5, 0.25], // 橙
+      [0.8, 0.6, 0.4], // 砖色
+      [1.0, 0.8, 0.5], // 金黄
+    ],
+    glowColor: [1.0, 0.4, 0.5], // 橙红光
+  },
+  mapbox_outdoors: {
+    baseColors: [
+      [0.3, 0.6, 0.4], // 草绿
+      [0.25, 0.7, 0.5], // 青绿
+      [0.4, 0.5, 0.3], // 苔藓绿
+      [0.35, 0.65, 0.45], // 森林绿
+    ],
+    glowColor: [0.0, 0.8, 0.8], // 蓝绿光
+  },
+  mapbox_light: {
+    baseColors: [
+      [0.6, 0.7, 0.9], // 淡蓝灰
+      [0.7, 0.6, 0.8], // 淡紫灰
+      [0.55, 0.65, 0.8], // 雾蓝
+      [0.65, 0.7, 0.85], // 银蓝
+    ],
+    glowColor: [0.5, 0.6, 1.0], // 柔和蓝光，略带冷色气氛
+  },
+
+  mapbox_dark: {
+    baseColors: [
+      [0.25, 0.35, 0.5], // 深钢蓝
+      [0.3, 0.45, 0.6],  // 蓝灰
+      [0.4, 0.3, 0.6],   // 暗紫蓝
+      [0.35, 0.5, 0.7],  // 青蓝亮一点
+    ],
+    glowColor: [1.0, 0.7, 0.2], // 金橙光，暖色与黑底对比强烈
+  },
+};
+
+
 
 
 export function getPathVisualScheme(styleId: keyof typeof pathColorScheme) {

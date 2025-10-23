@@ -19,24 +19,29 @@
         
         class="takeaway-panel"
       >
-        <button @click="playAnimation">
-          开始
-        </button>
-        <button @click="pauseAnimation">
-          暂停
-        </button>
-        <button @click="resumeAnimation">
-          继续
-        </button>
-        <button @click="serviceClear">
-          清除
-        </button>
-        <button @click="followRider">
-          视线跟随
-        </button>
-        <button @click="removeFllow">
-          取消跟随
-        </button>
+        <div class="button-row top">
+          <el-button type="primary" plain :size=size  @click="playAnimation">
+            开始
+          </el-button>
+          <el-button type="primary" plain :size=size @click="pauseAnimation">
+            暂停
+          </el-button>
+          <el-button type="primary" plain :size=size  @click="resumeAnimation">
+            继续
+          </el-button>
+          <el-button type="primary" plain :size=size  @click="serviceClear">
+            清除
+          </el-button>
+        </div>
+        <div class="button-row bottom">
+          <el-button type="primary" plain :size=size  @click="followRider">
+            视线跟随
+          </el-button>
+          <el-button type="primary" plain :size=size  @click="removeFllow">
+            取消跟随
+          </el-button>
+        </div>
+        
         <div
           v-if="animationState"
           class="progress-info"
@@ -66,6 +71,8 @@ interface CesiumInjection {
   isReady: Ref<boolean>
 }
 
+const size = 'small'
+
 let sceneStateManager : SceneStateManager
 let clockController : ClockController
 
@@ -84,7 +91,14 @@ const animationState = ref<any>(null)
  * 初始化服务
  */
 async function initializeServices(viewer: Cesium.Viewer) {
-  sceneStateManager = new SceneStateManager(viewer)
+  const existingManager = sceneStore.getManager()
+  if(existingManager){
+    sceneStateManager = existingManager
+  }else{
+    sceneStateManager = new SceneStateManager(viewer)
+    sceneStore.setManager(sceneStateManager)
+  }
+
   sceneStore.setManager(sceneStateManager) //保存到pinia store 方便订单面板管理
   const res = createRiderController(sceneStateManager)
   sceneStore.setPollingFns(res.startPolling,res.stopPolling)
@@ -106,9 +120,12 @@ async function startRiderAnimation() {
   }
 
   try {
+
     let services = sceneStateManager?.getServices()
+   
     const data = sceneStateManager.getData()
-    
+
+
     if(!services || !data) return 
     
     let {animationService,pointService,pathService} = services
@@ -122,7 +139,7 @@ async function startRiderAnimation() {
       pointService = services.pointService
       pathService = services.pathService
     }
-
+   
     //如果此时已经有图钉entity就不再启动
     if(pointService?.hasEntity()) return
 
@@ -155,11 +172,12 @@ async function startRiderAnimation() {
 
 // 动画控制方法
 const playAnimation = () => {
-  startRiderAnimation()
   //取消订单面板轮询
   sceneStore.stopPolling()
   // 清除 订单面板的延时器（startLater）
   sceneStore.clearTimeout()
+
+  startRiderAnimation()
 
   //订单面板状态重置
   sceneStateManager.resetOrderControlStatus()
@@ -224,7 +242,8 @@ const serviceClear = ()=>{
 watch(
     [viewerRef, isReady],
     async ([vRef, ready]) => {
-      if (ready && vRef) {
+      
+      if (vRef && ready) {
         
         await initializeServices(vRef)
 
@@ -273,10 +292,10 @@ onUnmounted(() => {
     box-shadow: 
       0 0 1rem rgba(0,255,255,0.6),
       0 0 1.5rem rgba(0,255,255,0.4);
-    transform: translateX(0.5rem) scale(1.1);
+    transform: translateX(0.1rem) scale(1.1);
   }
   &.open{
-    left: 16rem;
+    left: 24.5rem;
     width: 2rem;
     height: 5rem;
     font-size: 0.8rem;
@@ -288,35 +307,38 @@ onUnmounted(() => {
 .side-bar{
   position: absolute;
   z-index: 1;
+  pointer-events: none;
   .takeaway-panel{
-    position: absolute;
-    left:-15rem;
+  pointer-events: auto;
+
+    position: relative;
+    left:-104%;
     top: 16.5rem;
-    width: 15rem;
-    height: 8rem;
+    width: 24rem;
+    height: 7rem;
     opacity: 0;
     transition: all 0.5s ease;
     border-radius: 1rem;
-    background: 
-      linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%),
-      rgba(40, 150, 135, 0.35); // 更冷调的青绿色底色
-    backdrop-filter: blur(1.125rem);
-    -webkit-backdrop-filter: blur(.75rem);
-    box-shadow: 
-      0 .25rem .75rem rgba(0, 0, 0, 0.25),   // 外层阴影
-      inset 0 .0625rem .125rem rgba(255, 255, 255, 0.2); // 内发光
-    button{
-      margin-right: 8px;
-      margin-bottom: 8px;
-    }
+    background: rgba(10, 25, 47, 0.5); // 深蓝玻璃质感
+    border: .0625rem solid rgba(0, 255, 255, 0.4);
+    box-shadow: 0 0 1.25rem rgba(0, 255, 255, 0.3),inset 0 0 1rem rgba(172, 253, 253, 0.616);
+    backdrop-filter: blur(.5rem);
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: .6rem;
+    
+    
     &.open{
       transform: translateX(105%);
       opacity: 1;
       &.glow{
         box-shadow:
           0 .25rem 1.25rem 0rem rgba(0, 255, 200, 0.6), // 第一个0rem 表示左右偏移为0 第二个0.25rem 表示向下偏移0.25rem 第三个1.25rem表示光晕 0rem表示光晕偏移量
-          inset 0 .0625rem .1875rem rgba(255, 255, 255, 0.3); //内部白色阴影 高光凹陷效果
-        transform: translateX(102%) scale(1.05);
+          inset 0 0 1.4rem rgba(116, 231, 206, 0.6);
+        transform: translateX(104%) scale(1.01);
       }
     }
   }

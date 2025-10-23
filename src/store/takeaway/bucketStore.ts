@@ -1,7 +1,7 @@
 //管理 bucket 状态 因为需要监听 bucket 变化更新骑手配送状态
 
 import { defineStore } from 'pinia' // 导入
-import type { SegmentBuckets, flattenedSegmentsType } from '../../views/cesium/toolbar/takeaway/interface-nouse'
+import type { SegmentBuckets, flattenedSegmentsType } from '@/interface/takeaway/interface'
 import { GlobalServices } from '../../service/cesium/takeaway/GlobalServices'
 
 

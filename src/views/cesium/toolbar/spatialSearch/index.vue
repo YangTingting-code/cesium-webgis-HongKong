@@ -1,21 +1,21 @@
 <template>
-  <div v-if="isReady">
+  <!-- <div v-if="isReady"> -->
     <!-- 控制按钮 -->
-    <div
-      class="toggle-btn"
-      :class="{ open: sidebarOpen }"
-      @mouseenter="isBtnHover = true"
-      @mouseleave="isBtnHover = false"
-      @click="sidebarOpen = !sidebarOpen"
-    >
-      <span>{{ sidebarOpen ? '关闭' : '查看周边' }}</span>
-    </div>
+  <div
+    class="toggle-btn"
+    :class="{ open: sidebarOpen }"
+    @mouseenter="isBtnHover = true"
+    @mouseleave="isBtnHover = false"
+    @click="sidebarOpen = !sidebarOpen"
+  >
+    <span>{{ sidebarOpen ? '关闭' : '查看周边' }}</span>
+  </div>
 
-    <!-- 侧边栏 -->
-    <div
-      class="sidebar"
-      :class="{ open: sidebarOpen }"
-    >
+  <!-- 侧边栏 -->
+  <div
+    class="sidebar"
+    :class="{ open: sidebarOpen }"
+  >
       <!-- 搜索方式 -->
       <!-- <div 
         v-if="!showControl" 
@@ -34,46 +34,45 @@
       </div> -->
 
       <!-- 控制面板 -->
-      <div 
-        v-if="showControl"
-        :class="{ glow: isBtnHover }"
-        class="control-panel" 
-        @click.stop="controlClick"
-      >
-        <span class="slider-title">搜索半径</span>
-        <div class="slider-demo-block">
-          <el-slider
-            v-model="radius"
-            :min="10"
-            :max="300"
-            :step="10"
-            show-input
-            size="small"
-          />
-        </div>
-        <div class="button-row">
-          <el-button
-            size="small"
-            type="primary"
-            round
-            :disabled="isStartDisabled"
-            class="start"
-          >
-            开始搜索
-          </el-button>
-          <el-button
-            size="small"
-            type="success"
-            round
-            :disabled="isStopDisabled"
-            class="stop"
-          >
-            停止搜索
-          </el-button>
-        </div>
+    <div 
+      v-if="showControl"
+      :class="{ glow: isBtnHover }"
+      class="control-panel" 
+      @click.stop="controlClick"
+    >
+      <span class="slider-title">搜索半径</span>
+      <div class="slider-demo-block">
+        <el-slider
+          v-model="radius"
+          :min="10"
+          :max="300"
+          :step="10"
+          show-input
+        />
+      </div>
+      <div class="button-row">
+        <el-button
+          size="small"
+          type="primary"
+          round
+          :disabled="isStartDisabled"
+          class="start"
+        >
+          开始搜索
+        </el-button>
+        <el-button
+          size="small"
+          type="success"
+          round
+          :disabled="isStopDisabled"
+          class="stop"
+        >
+          停止搜索
+        </el-button>
       </div>
     </div>
   </div>
+  <!-- </div> -->
 </template>
 
 <script setup lang="ts">
@@ -475,7 +474,7 @@ function loop() {
   border-radius: 0 .5rem .5rem 0;
   cursor: pointer;
   transition: all 0.5s ease;
-  z-index: 1;
+  z-index: 10;
   &:hover {
     transform: translateX(0.5rem) scale(1.1);
     box-shadow: 0 0 1rem rgba(0,255,255,0.6),0 0 1.5rem rgba(0,255,255,0.4)
@@ -495,50 +494,44 @@ function loop() {
   top: -0.5%;
   left: 0;
   width: 25rem;
-  height: 11rem;
+  height: 12rem;
   background: transparent;
   transform: translateX(-100%);
   transition: all 0.5s ease;
   z-index: 1;
-  overflow-y: auto;
+  overflow-y: hidden;
   opacity: 0;
   pointer-events: none;
   &.open {
     transform: translateX(0);
     opacity: 1;
     pointer-events:auto;
+    
   }
   .control-panel {
+    
     position: relative;
     margin: 0.75rem auto;
     padding: 1rem 1.25rem;
     width: 95%;
     min-height: 8rem;
     border-radius: 1rem;
-    background: 
-      linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%),
-      rgba(40, 150, 135, 0.35); // 更冷调的青绿色底色
-    backdrop-filter: blur(1.125rem);
-    -webkit-backdrop-filter: blur(.75rem);
-    box-shadow: 
-      0 .25rem .75rem rgba(0, 0, 0, 0.25),   // 外层阴影
-      inset 0 .0625rem .125rem rgba(255, 255, 255, 0.2); // 内发光
+    background: rgba(10, 25, 47, 0.5); // 深蓝玻璃质感
+    box-shadow: 0 0 1.25rem rgba(0, 255, 255, 0.3),inset 0 0 1rem rgba(172, 253, 253, 0.616);
+    backdrop-filter: blur(.5rem);
     overflow: hidden;
     transition: all 0.5s ease;
     &.glow{
       box-shadow:
-        0 .25rem 1.25rem 0rem rgba(0, 255, 200, 0.6), // 第一个0rem 表示左右偏移为0 第二个0.25rem 表示向下偏移0.25rem 第三个1.25rem表示光晕 0rem表示光晕偏移量
-        inset 0 .0625rem .1875rem rgba(255, 255, 255, 0.3); //内部白色阴影 高光凹陷效果
-      transform: scale(1.05);
+        0 0rem 1rem 0rem rgba(0, 255, 200, 0.6), // 第一个0rem 表示左右偏移为0 第二个0.25rem 表示向下偏移0.25rem 第三个1.25rem表示光晕 0rem表示光晕偏移量
+        inset 0 0 2rem rgba(116, 231, 206, 0.6);
+      transform: translateX(-0.5rem) scale(1.02);
     }
     .slider-title {
-      color: #eafff9;
-      text-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.5),
-        0 0 6px rgba(0, 255, 200, 0.4);
-      font-size: 1.1rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color:#00e5ff;
+      text-shadow: 0 0 .5rem rgba(0, 255, 255, 0.6);
     }
 
     .slider-demo-block {
@@ -547,43 +540,101 @@ function loop() {
       display: flex;
       align-items: center;
       pointer-events: auto;
+      //数字输入框
+      :deep(.el-input-number) {
+        width: 80px;            // 1. 整体先压死
+        line-height: 22px;
+      }
+      :deep(.el-input-number .el-input__wrapper) {
+        padding: 0 4px;         // 2. 把左右 padding 压到 4 px
+        height: 22px;
+        min-width: unset;       // 3. 去掉 Element 的 min-width
+      }
+
+      :deep(.el-input-number .el-input__inner) {
+        font-size: 11px;        // 4. 字体缩小，减少占位
+        text-align: center;     // 5. 居中后可再压 4-6 px
+      }
+
+      :deep(.el-input-number__decrease),
+      :deep(.el-input-number__increase) {
+        width: 18px;            // 6. 侧边按钮压窄
+        height: 20px;           // 7. 上下按钮高度减半
+      }
 
       .el-slider {
         flex: 1;
         margin-left: 0.75rem;
+        /* Slider轨道 */
+        :deep(.el-slider__runway) {
+          height: 3px;
+          border-radius: 2px;
+          margin-right: 16px;
+        }
+
+        /* 已选轨道 */
+        :deep(.el-slider__bar) {
+          height: 3px;
+          border-radius: 2px;
+          box-shadow: none;
+        }
+
+        :deep(.el-slider__stop){
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          border: 1px solid #0000006f;
+          background: radial-gradient(circle at 30% 30%, #fff);
+          top: -2px;
+        }
+        /* 滑块按钮 */
+        :deep(.el-slider__button) {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          border: 2px solid #00c2ff;
+          background: radial-gradient(circle at 30% 30%, #00c2ff, #0f1325);
+          position: relative;
+          top: -1px;
+          transition: transform 0.2s ease;
+        }
+        :deep(.el-slider__button:hover) {
+          transform: scale(1.2);
+          box-shadow: 0 0 6px rgba(0, 194, 255, 0.6);
+        }
       }
     }
 
     .button-row {
-      margin-top: 1.25rem;
+      margin-top: 0.5rem;
       display: flex;
-      justify-content: space-between;
-      gap: 0.75rem;
-      // pointer-events: auto;
+      justify-content: space-around;
 
-      .el-button {
-        flex: 1;
-        font-weight: 500;
-        letter-spacing: 0.02em;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
-        transition: all 0.25s ease;
+      //button 用el默认样式
+      // .el-button {
+      //   width: 40%;
+      //   font-weight: 500;
+      //   letter-spacing: 0.02em;
+      //   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+      //   transition: all 0.25s ease;
 
-        &:hover {
-          transform: translateY(-2px) scale(1.02);
-          box-shadow: 0 6px 16px rgba(0, 255, 200, 0.35);
-        }
+      //   &:hover {
+      //     transform: translateY(-2px) scale(1.02);
+      //     box-shadow: 0 6px 16px rgba(0, 255, 200, 0.35);
+      //   }
 
-        &.start {
-          background: linear-gradient(145deg, #3fa9f5, #0077b6);
-          border: none;
-          color: #fff;
-        }
-        &.stop {
-          background: linear-gradient(145deg, #43d68f, #2a9d8f);
-          border: none;
-          color: #fff;
-        }
-      }
+      //   &.start {
+      //     background: linear-gradient(145deg, #3fa9f5, #0077b6);
+      //     border: none;
+      //     color: #fff;
+      //   }
+      //   &.stop {
+      //     background: linear-gradient(145deg, #43d68f, #2a9d8f);
+      //     border: none;
+      //     color: #fff;
+      //   }
+      // }
+      
     }
   }
 }

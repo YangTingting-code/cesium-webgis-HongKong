@@ -1,1 +1,2 @@
-export const title = '广州天河智慧商圈平台';
+export const title = '香港智慧商圈平台';
+export const region = '当前行政区：';

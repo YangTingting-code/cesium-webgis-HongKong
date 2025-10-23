@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { SceneStateManager } from '../../../../../service/cesium/takeaway/SceneStateManager'
+import type { SceneStateManager } from '@/service/cesium/takeaway/SceneManage/SceneStateManager'
 // import  {type Ref,ref} from 'vue'
 let _manager: SceneStateManager | null = null
 

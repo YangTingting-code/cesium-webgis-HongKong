@@ -42,7 +42,7 @@
               <div class="d-flex aside-width">
                 <div class="react-left react-l-l">
                   <span class="react-before" />
-                  <span class="text">{{ title }}</span>
+                  <topRegSel />
                 </div>
                 <div class="react-left">
                   <span class="text">{{ title }}</span>
@@ -54,7 +54,7 @@
                 </div>
                 <div class="react-right react-r-l">
                   <span class="react-after" />
-                  <span class="text">{{ title }}</span>
+                  <nowTime />
                 </div>
               </div>
             </div>
@@ -93,16 +93,19 @@ import { title } from '../constant/index';
 import cesium from './cesium/index.vue';
 import left from './leftPanel/index.vue'
 import right from './rightPanel/index.vue'
+import topRegSel from '@/views/top/RegionSelection.vue'
+import nowTime from '@/views/top/NowTime.vue'
 import {Viewer} from 'cesium'
 
 const viewerInstance= ref<Viewer|null>(null)
-
 provide('getViewer',(viewer:Viewer)=>{
   console.log('孙组件传来的viewer',viewer)
   viewerInstance.value = viewer
 })
 
 provide('viewerInstance',viewerInstance)
+
+
 
 
 const loading = ref(true);
@@ -131,7 +134,6 @@ onMounted(() => {
 // 修改成watch
 
 onBeforeUnmount(() => {
-  // unWindowDraw(); // 移除监听，避免内存泄漏
   window.removeEventListener('resize', setRem);
 });
 

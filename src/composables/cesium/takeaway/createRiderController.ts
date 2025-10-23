@@ -27,6 +27,7 @@ export function createRiderController(sceneManager: SceneStateManager) {
       combinedControlStore.updateStatus()
 
     }, intervalMS)
+
     isPolling.value = true
   }
 
@@ -35,7 +36,9 @@ export function createRiderController(sceneManager: SceneStateManager) {
       clearInterval(intervalId)
       intervalId = null
       isPolling.value = false
+
     }
+
   }
 
 

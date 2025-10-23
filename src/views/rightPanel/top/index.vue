@@ -67,7 +67,7 @@
             <el-option value="night">20点-24点</el-option>
           </el-select>
         </div>
-        <el-button @click="changeOrder"> 
+        <el-button @click="changeOrder" size="small"> 
           查看其他订单
         </el-button>
       </div>
@@ -85,6 +85,7 @@ import {useCombinedControlStore } from '@/store/takeaway/combinedControlStore'
 import type {SceneStateManager} from '@/service/cesium/takeaway/SceneManage/SceneStateManager'
 import {ScenePersistence} from '@/service/cesium/takeaway/SceneManage/ScenePersistence'
 import {useSceneLifecycle} from '@/composables/cesium/takeaway/useSceneLifecycle'
+
 
 let initScene :(region:string,timeslot:number)=>Promise<void>
 let switchRider:()=>Promise<void>
@@ -149,7 +150,6 @@ watch(()=>sceneStore.isReady,async (ready)=>{
       await orderStore.deleteMatrixSlotKey('九龙城区','dusk')
 
       await orderStore.prepareData(combinedorderControl.currentRegion,9,3) */
-
       const fns = useSceneLifecycle(sceneManager)
       initScene = fns.initScene
       switchRider = fns.switchRider
@@ -173,6 +173,7 @@ watch(currentSlotKey,async (newValue)=>{
     sceneManager.clear()
   
     await sceneManager.loadRiderDataByRegionTime(combinedorderControl.currentRegion,timeslot)
+
     combinedControlStore.updateStatus() //通知二维底图更新数据
     //切换时间段订单状态重置
     orderStorePinia.resetStatus()
@@ -189,7 +190,6 @@ watch(currentSlotKey,async (newValue)=>{
     },600);
 
     //面板订单切换
-    // const {switchRider} = useSceneLifecycle(sceneManager)
     switchRider() 
     //清除轮询
     sceneStore.stopPolling()
@@ -212,6 +212,7 @@ function startLater(timeoutMS = 5000){
     }, (timeoutMS));
   
     sceneStore.updateTimeoutId(timeoutId)
+
   }
 }
 

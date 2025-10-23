@@ -31,11 +31,13 @@ import * as Cesium from 'cesium';
 import heatmapControler from '@/components/heatmap/HeatmapControler.vue'
 import type { HeatSnapWithoutId } from '@/interface/heatmap/interface';
 import {saveCameraPos,setCameraPosition,removeCameraListener,position2bbox} from '@/utils/aboutCamera' 
+
 import {
   CesiumHeatmap,
   type HeatmapPoint,
 } from '@/lib/cesium-heatmap-es6-custom';
 import {getFeaturesBBox} from '@/utils/geo/json2Feature'
+import {heatmapPersistence} from '@/service/cesium/heatmap/heatmap-persistence'
 
 interface CesiumInjection{
   viewerRef:Ref<Cesium.Viewer>,
@@ -66,7 +68,9 @@ let heatmapOption = {
 }
 let globalMax = 2500
 let globalMin = 0
-let lastOption = JSON.parse(localStorage.getItem('lastOption') || "{}")
+
+
+let lastOption = heatmapPersistence.getLastOption()
 const isRegisterCamera = ref(false)
 
 //接收表单数据 并且把string转换成number，把起止时间转换成JulianDate格式的，下一步就是查找本地数据有没有 没有的话就重新计算
@@ -85,7 +89,7 @@ const handleForm = (value:FormType)=>{
     iso1 = value["date"][0]
     iso2 = value["date"][1]
   }
-  console.log('iso1,iso2',iso1,iso2)
+
 
   const startTime = Cesium.JulianDate.fromIso8601(iso1)
   const stopTime = Cesium.JulianDate.fromIso8601(iso2)
@@ -96,12 +100,12 @@ const handleForm = (value:FormType)=>{
   }
 }
 const save = (value:FormType)=>{
-  localStorage.setItem('heatmapOption',JSON.stringify(value))
+  heatmapPersistence.setLastOption(value)
 }
 const drawHeatmap = async (value:FormType, forceRedraw=false)=>{
   if(!viewerRef.value) return
   const {heatmapOption,startTime,stopTime} =handleForm(value)
-  lastOption = JSON.parse(localStorage.getItem('lastOption')||"{}") //获取上次的配置
+  lastOption = heatmapPersistence.getLastOption()
   const clock = viewerRef.value.clock 
   //判断是否需要重绘
   const needRedraw = forceRedraw ||
@@ -111,18 +115,20 @@ const drawHeatmap = async (value:FormType, forceRedraw=false)=>{
     
   if(needRedraw){//刷新回来 时间轴我没有做缩放 所以会进入到这里重绘
     clearHeatmap() //如果没有热力图需要清除 clearHeatmap会直接返回 不会做任何操作 
-    await initTime(heatmapOption,startTime,stopTime,JSON.parse(localStorage.getItem('heatmapVisited')||"false"))
+    await initTime(heatmapOption,startTime,stopTime,
+    heatmapPersistence.getIsHeatmap()
+  )
   }else{ //不用重绘 直接打开时间播放 有bug 有可能是刷新之后不用重绘制 此时是否播放动画需要根据刷新前的状态来决定
     clock.shouldAnimate = true 
   }
 }
 const startDraw = async (value:FormType)=>{
   // ===== 将当前绘制的区域更新到本地 ===== 还有什么时候会更新 点击继续绘制的时候
-localStorage.setItem('heatmapRegions',JSON.stringify(value.regions)) 
+  heatmapPersistence.setHeatmapRegions(value.regions)
 // ==========================================
   sidebarOpen.value = false
   save(value) //保存数据到本地
-  const heatmapVisited = JSON.parse(localStorage.getItem('heatmapVisited')||"false")
+  const heatmapVisited = heatmapPersistence.getIsHeatmap()
   await drawHeatmap(value,!heatmapVisited) //只有第一次绘制热力图的时候才需要重绘 heatmapVisited是热力图是否第一次绘制的标志
   saveCameraPos(viewerRef.value,isRegisterCamera) //开始相机监听 刷新之后表单数据回显 把表单数据提交给父组件 触发startDraw 此时不会再次监听照相机 因为isRegisterCamera是true
   isRegisterCamera.value = true
@@ -136,7 +142,7 @@ const pause = ()=>{ //暂停热力图的绘制
 }
 const play = async (value:FormType)=>{ //暂停热力图的绘制
   // ===== 将当前绘制的区域更新到本地 ===== 在点击“开始绘制”或者“继续绘制”的时候把当前热力图区域存储到本地
-  localStorage.setItem('heatmapRegions',JSON.stringify(value.regions)) 
+  heatmapPersistence.setHeatmapRegions(value.regions)
   // ==========================================
   save(value) //保存配置
   sidebarOpen.value = false
@@ -152,7 +158,8 @@ const clearHeatmap = ()=>{ //清除热力图
     tickRemoved = null
     isRemoved.value = true //表示热力图被移除了 下次绘制热力图需要重新创建实例
   }
-  localStorage.setItem('heatmapVisited',"false") // 设置当前状态：是否有开始绘制热力图 清除热力图就设置成false
+  heatmapPersistence.setIsHeatmap(false)
+  
   isRegisterCamera.value = false //照相机监听也移除
   removeCameraListener(isRegisterCamera)
 }
@@ -218,7 +225,8 @@ async function initTime(heatmapOptions:any,startTime:Cesium.JulianDate,endTime:C
   }
   //这个只是浅拷贝 要做深拷贝！
   // lastOption = toRaw(heatmapOption) //保存当前的heatmapOption 下次有改变就重新绘制 
-  localStorage.setItem('lastOption',JSON.stringify(heatmapOptions))//lastOption存入本地 刷新之后还能比较 初始化 那么当前的配置存为上次最新配置
+  heatmapPersistence.setLastOption(heatmapOptions)
+  
   initClock(startTime,endTime)
   // 2. 注册并保存移除句柄
   let lastSlot = -1
@@ -231,7 +239,6 @@ async function initTime(heatmapOptions:any,startTime:Cesium.JulianDate,endTime:C
     pending = true // 防止异步获取数据没结束又触发下一次更新
     try {
       const snap : HeatSnapWithoutId | null = await flowWeek.heatStore.getItem(`slot:${slot}`)
-      console.log('snap',snap)
       
       if (snap) {
         //按照区域绘制热力图 不同区域的热力图不同
@@ -251,13 +258,15 @@ async function initTime(heatmapOptions:any,startTime:Cesium.JulianDate,endTime:C
               // renderType:'primitive' 用primitive没有不会把热力图覆盖在模型上面
             })
             // 照相机调整至能观察到整个热力图
-            if(!heatmapVisited){ //当前没有热力图的时候才会缩放至全局
-              const regionsArr = JSON.parse(localStorage.getItem('heatmapRegions')||"[]")
+            if(!heatmapVisited){ //不是刷新时缩放至全局观察
+              const regionsArr = heatmapPersistence.getHeatmapRegions()
+
               const bboxFea = await getFeaturesBBox(regionsArr)
               if(bboxFea.bbox) position2bbox(bboxFea.bbox,viewerRef.value)
             }
             isRemoved.value = false //热力图没有被移除
-            localStorage.setItem("heatmapVisited","true") //本地标识 现在是开始绘制 刷新之后根据这个把数据回显
+            heatmapPersistence.setIsHeatmap(true)
+            
           }else{ 
             updateHeatmapData(heatLayer, points, globalMax,globalMin);
           }
@@ -275,9 +284,14 @@ onMounted(async () => {
   // 1. 判断本地是否存储数据 没有的话就存储 但是不会影响后面逻辑 因为并没有 await 等待
   const tester = new loadData();
   await tester.test(initRegions).catch((err) => console.error('dataTest 出错', err)); //用await等待indexedDB数据的检查和初始化会影响后面的热力图冷启动
-  //计算heatsnap 所有时间所有区域的 max min
 
-});
+  //照相机位置回显
+  const heatmapVisited = heatmapPersistence.getIsHeatmap()
+  if(heatmapVisited) { //刷新之后热力图是正在绘制状态 说明需要回显照相机，clock时间线缩放
+    const { destination, orientation } = heatmapPersistence.getCameraBeforeReload()
+    if (destination) setCameraPosition(viewerRef.value, destination, orientation)
+  }
+})
 onUnmounted(() => {
   //移除事件监听 把卸载卸载挂载里面 handler也写在里面方便管理
   // clearInterval(timer)
@@ -286,20 +300,7 @@ onUnmounted(() => {
     tickRemoved = null
   }
 });
-watch(viewerRef,()=>{
-  //子组件回显表单数据 触发最新表单数据提交函数emitStartDraw 即父组件的startDraw
-  //相机 本地有数据才恢复成上一次刷新前照相机的位置
-  const heatmapVisited = JSON.parse(localStorage.getItem('heatmapVisited') || "false")
-  if(heatmapVisited) { //刷新之后热力图是正在绘制状态 说明需要回显照相机，clock时间线缩放
-    const { destination, orientation } = JSON.parse(localStorage.getItem('cameraBeforeReload') || '{}')
-    if (destination) setCameraPosition(viewerRef.value, destination, orientation)
-    //clock时间线缩放回去
-    // 1.获取本地数据
-    // const [startTime,endTime] = JSON.parse(localStorage.getItem('heatmapOption')!).date
-    // initClock(Cesium.JulianDate.fromIso8601(startTime),Cesium.JulianDate.fromIso8601(endTime)) //初始化clock
-  }
-  
-})
+
 </script>
 
 <style scoped lang="scss">
@@ -327,7 +328,7 @@ watch(viewerRef,()=>{
     transform: translateX(0.5rem) scale(1.1);
   }
   &.open{
-    left: 33rem; /* 跟随侧边栏宽度 */
+    left: 29rem; /* 跟随侧边栏宽度 */
     width: 2rem;
     height: 5rem;
     font-size: 0.8rem;

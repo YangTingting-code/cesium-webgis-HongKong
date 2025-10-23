@@ -1,11 +1,11 @@
 import axios from 'axios';
-import { bounds } from '@/data/region/HKBoundary';
+// import { bounds } from '@/data/region/HKBoundary';
 
 //获取数据 拿到建筑物的面
 // https://[OGC WFS URL]?[SERVICE]&[VERSION]&[REQUEST]&[TYPENAME]&[OUTPUTFORMAT]&[SRSNAME]&[BBOX]&[COUNT]
 // ArcGIS REST API网址格式：
 // https://[ArcGIS REST API URL]/[layerId]/query?[f]&[returnGeometry]&[spatialRel]&[geometry]&[geometryType]&[inSR]&[outSR]&[where]&[outFields]
-export async function getHKWFS(bounds?: {
+export async function getHKWFS(bounds: {
   south: number;
   west: number;
   north: number;

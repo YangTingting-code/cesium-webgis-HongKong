@@ -1,6 +1,6 @@
 <template>
   <div class="map-wrapper">
-    <cesiumMap ref="viewerRef" />
+    <cesiumMap ref="viewerTileRef" />
     <changeLayers
       class="layer-control"
       @change-layer="switchLayer"
@@ -15,22 +15,25 @@ import changeLayers from './loaders/changeLayers.vue';
 import {mapPersistence} from '@/service/loaders/index'
 import {applyBaselayer} from '@/service/loaders/cesium-map-service'
 
-const viewerRef = ref<any>();
+const viewerTileRef = ref<any>()
 
 function switchLayer(type: string) {
-  const viewer = viewerRef.value?.viewerRef
-  if (!viewer) return;
+  const viewer = viewerTileRef.value?.viewerRef
+  const tileset = viewerTileRef.value?.tilesetRef
+  if (!viewer || !tileset) return
 
-  applyBaselayer(viewer,type)
+  applyBaselayer(viewer,tileset,type)
  
 }
-watch(
-  ()=>viewerRef.value?.viewerRef,
-  (viewer)=>{
-    const mapId = mapPersistence.getMapstyle() //得到mapId 根据Id 加载对应地图
-    applyBaselayer(viewer,mapId)
 
-})
+watch(
+  ()=>[viewerTileRef.value?.viewerRef,viewerTileRef.value?.tilesetRef],
+  ([vRef,tRef])=>{
+    if(!vRef || !tRef) return
+    const mapId = mapPersistence.getMapstyle() //得到mapId 根据Id 加载对应地图
+    applyBaselayer(vRef,tRef,mapId)
+
+},{immediate:true})
 
 </script>
 
