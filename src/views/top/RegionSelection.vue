@@ -8,13 +8,13 @@
       size="small"
     >
       <el-option
-        v-for="region in regions"
-        :key="region"
-        :label="region"
-        :value="region"
+        v-for="r in regions"
+        :key="r"
+        :label="r"
+        :value="r"
       >
         <div class="region-option">
-          <span class="region">{{ region }}</span>
+          <span class="region">{{ r }}</span>
         </div>
       </el-option>
     </el-select>

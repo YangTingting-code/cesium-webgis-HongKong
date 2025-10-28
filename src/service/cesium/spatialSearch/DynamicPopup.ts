@@ -17,8 +17,6 @@ interface PopupOptions {
   chartData: Reactive<{ value: number; name: string }[]>;
   onDelete: () => void; //新增
 }
-const BASE_WIDTH = 1920;
-const BASE_HEIGHT = 1080;
 
 export default class DynamicPopup {
   private viewer: Cesium.Viewer;
@@ -71,7 +69,6 @@ export default class DynamicPopup {
     /**bind(this) 会返回一个新的函数，并且在调用时 this 永远指向当前的 DynamicPopup 实例。
 因为 updatePosition 是类的方法，如果直接传给 addEventListener，this 会指向 Cesium 的上下文，而不是你的类实例，所以要 bind(this) 保证方法内的 this.div、this.viewer 等能正常访问 */
     this.viewer.scene.postRender.addEventListener(this.postRenderFn); //事件绑定的话 需不需要把弄成像handel一样的方便解绑呢？
-    const cameraHeight = this.viewer.camera.positionCartographic.height;
   }
 
 

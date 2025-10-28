@@ -32,6 +32,7 @@ export class PathGeometryService {
     let searchStart = 0
     const scale = order0.milestones[order0.milestones.length - 1].cumDistance / this.flattenedSegments[this.flattenedSegments.length - 1].globalEnd //全局比例 cumDistance < flattenedDistance ,cumDistance / scale => cumDistance2flattenedDistance
 
+    //遍历里程碑
     for (let i = 0; i < order0.milestones.length - 1; i++) {
 
       const currentMilestone = order0.milestones[i]
@@ -40,6 +41,7 @@ export class PathGeometryService {
       const startD = currentMilestone.cumDistance
       const endD = nextMilestone.cumDistance
 
+      //根据里程碑转换到flatten的距离找到对应的segment
       const startIdx = this.findSegmentIndexByRealCum(startD, searchStart, scale)
       const endIdx = this.findSegmentIndexByRealCum(endD, startIdx, scale) + 1
 
@@ -62,52 +64,30 @@ export class PathGeometryService {
       searchStart = endIdx
     }
 
-    //最后一段 endDistance 对齐 order0.distance（修正几何偏差）
+    //最后一段 endDistance 对齐 order0.distance（修正几何偏差） 打补丁
     // 那如果每一段的endDistance 都修正呢?
     for (let i = this.legs.length - 1; i >= 0; i--) {
       if (this.legs[i].endDistance > order0.distance) {
-        if (Math.abs(this.legs[i].endDistance - this.legs[i].startDistance) <= 1e-2) {
+        if (Math.abs(this.legs[i].endDistance - this.legs[i].startDistance) <= 1e-2) { //如果起点和终点相等 起点也要修正
           this.legs[i].startDistance = order0.distance;
         }
         this.legs[i].endDistance = order0.distance;
       } else break;
     }
-    // if (this.legs.length > 0 && order0.distance) {
-    //   const lastLegIdx = this.legs.length - 1
-    //   const lastLeg = this.legs[lastLegIdx]
-    //   //考虑三个送货点都在一起
-    //   const reverseSecondLeg = this.legs[lastLegIdx - 1] //倒数第二个
-    //   const reverseThirdLeg = this.legs[lastLegIdx - 2] //倒数第三个
 
-    //   if (lastLeg.endDistance > order0.distance) {
-    //     if (Math.abs(lastLeg.startDistance - lastLeg.endDistance) <= 1e-2) { //如果开始距离等于结束距离 且他们都大于订单总距离
-    //       lastLeg.startDistance = order0.distance
-    //       lastLeg.endDistance = order0.distance
-    //     } else {
-    //       lastLeg.endDistance = order0.distance
-    //     }
+    const lastLeg = this.legs[this.legs.length - 1]
 
-    //     if (reverseSecondLeg.endDistance > order0.distance) {
-    //       if (Math.abs(reverseSecondLeg.startDistance - reverseSecondLeg.endDistance) <= 1e-2) { //如果开始距离等于结束距离 且他们都大于订单总距离
-    //         reverseSecondLeg.startDistance = order0.distance
-    //         reverseSecondLeg.endDistance = order0.distance
-    //       } else {
-    //         reverseSecondLeg.endDistance = order0.distance
-    //       }
-    //       if (reverseThirdLeg.endDistance > order0.distance) {
-    //         if (Math.abs(reverseThirdLeg.startDistance - reverseThirdLeg.endDistance) <= 1e-2) { //如果开始距离等于结束距离 且他们都大于订单总距离
-    //           reverseThirdLeg.startDistance = order0.distance
-    //           reverseThirdLeg.endDistance = order0.distance
-    //         } else {
-    //           reverseThirdLeg.endDistance = order0.distance
-    //         }
-    //       }
-    //     }
-    //     console.warn(
-    //       `⚠️ flatten 总长(${lastLeg.endDistance.toFixed(2)}) > order.distance(${order0.distance.toFixed(2)}), 自动对齐`
-    //     )
-    //   }
-    // }
+    //虚拟段 骑手运动到终点之后再延伸一段 为了骑手回退的时候不会被误判一直最后一段，因为之前骑手运动到最后是通过终点距离更新的buckets状态 回退的时候依旧被判断在最后一段，这不对，于是在最后加一个虚拟段，这样终点回退的时候就可以更新了。
+    this.legs.push({
+      startDistance: lastLeg.endDistance,
+      endDistance: lastLeg.endDistance + 0.001,  // 给一点极小长度
+      startCum: lastLeg.endCum,
+      endCum: lastLeg.endCum,
+      startMilestone: lastLeg.endMilestone,
+      endMilestone: lastLeg.endMilestone + 1,    // 虚拟 milestone
+      segmentIndices: [],                        // ✅ 空数组
+    })
+
   }
 
 

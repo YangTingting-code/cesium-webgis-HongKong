@@ -81,7 +81,7 @@ export const clearDB = () =>
 /** 获取所有数据 */
 export async function getAllBuildings() {
   const all: any[] = [];
-  await buildingStore.iterate((value, key, iterationNumber) => {
+  await buildingStore.iterate((value) => {
     //能不能只写value？
     all.push(value);
   });

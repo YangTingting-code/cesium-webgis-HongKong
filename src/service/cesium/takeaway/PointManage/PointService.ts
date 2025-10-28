@@ -8,8 +8,9 @@ export class PointService {
   private pinRender: PinRenderService
   private popup: PopupService
   private interaction: InteractionService
-
-  constructor(private viewer: Cesium.Viewer, private orders: DeliveryOrder[]) {
+  private orders: DeliveryOrder[]
+  constructor(viewer: Cesium.Viewer, orders: DeliveryOrder[]) {
+    this.orders = orders
     this.pinRender = new PinRenderService(viewer)
     this.popup = new PopupService(viewer)
     this.interaction = new InteractionService(viewer, this.popup, this.pinRender)

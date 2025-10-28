@@ -1,7 +1,7 @@
 <!-- 控制弹窗的长相 -->
 <template>
   <div
-    v-if="showRef.value"
+    v-if="showRef"
     :id="id"
     class="divlabel-container"
   >
@@ -45,7 +45,10 @@ const {
   id: propId,
   chartData,
   removeCircle,
-} = defineProps<Props>();
+} = withDefaults(defineProps<Props>(),{
+  title: '默认标题',
+  id: 'default-id'
+})
 
 const showRefRef = showRef as Ref<boolean>; // 类型断言
 const title = ref(propTitle);

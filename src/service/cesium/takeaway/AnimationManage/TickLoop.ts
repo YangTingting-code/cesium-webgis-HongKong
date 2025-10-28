@@ -1,4 +1,4 @@
-import { Viewer } from 'cesium'
+import { Viewer, Clock } from 'cesium'
 import { ClockController } from './ClockController'
 import type { PathTracker } from './PathTracker'
 import type { OrderTracker } from './OrderTracker'
@@ -37,13 +37,13 @@ export class TickLoop {
 
     if (isPath) {
       useLastElapsed = true
-      lastElapsed = JSON.parse(localStorage.getItem('lastElapsed') || '0')
+      lastElapsed = ScenePersistence.getLastElapsed()
     }
 
     //在onTick回调之前用 销毁锁 判断是否已执行过销毁逻辑 
     if (this.destroyed) return
 
-    const tickHandler = (clock) => {
+    const tickHandler = (clock: Clock) => {
       if (this.destroyed) return
 
       if (!clock.shouldAnimate) return
@@ -53,11 +53,15 @@ export class TickLoop {
 
       const cumDistance = this.pathTracker.getCumDistance(elapsed)
 
+      //更新骑手朝向位置 ,此时不是回显 填flase 直接计算出骑手的朝向和位置
+      this.pathTracker.updateRiderPosition(false)
+
       // const isBack = this.lastCumDistance > cumDistance //上一次的距离大于这一次的距离 说明时间倒流
       const isBack = this.orderTracker.isBack(cumDistance)
 
-      // const buckets = 
+      //绘制轨迹线
       this.pathTracker.updateFrame(isBack)
+
       // 新增：根据骑手位置更新订单状态 
       this.orderTracker.checkMilestoneProgress(cumDistance)
 
@@ -70,7 +74,7 @@ export class TickLoop {
       // this.onProgressUpdate(this.globalProgress, cumDistance, elapsed)
 
       // 检查动画是否完成
-      if (this.shouldStop(elapsed, cumDistance)) {
+      if (this.shouldStop(elapsed, cumDistance) && this.viewer.clock.multiplier > 0) {
         this.clockController.stopAnimation()
         this.pathTracker.reset()
       }
@@ -82,6 +86,9 @@ export class TickLoop {
   }
 
   private shouldStop(elapsed: number, cumDistance: number): boolean {
+    console.log('cumDistance', cumDistance)
+    console.log('this.order.distance', this.order.distance)
+    console.log('this.order.distance - 0.01', this.order.distance - 0.01)
     if (!this.order) return false
     return (
       elapsed >= this.order.duration ||

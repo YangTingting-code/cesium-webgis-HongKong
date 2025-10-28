@@ -143,9 +143,6 @@ interface EachArea {
   area: Number;
   // geometry: { lat: number; lng: number }[]
 }
-interface totalArea {
-  totalArea: number;
-}
 
 //判断建筑是否在半径内 计算不准确 搜索圈内的有些要素都没有返回
 function isBuildingInRadius(
@@ -267,29 +264,7 @@ function isValidPolygon(geom: { lat: number; lng: number }[]): boolean {
   );
 }
 
-/**
- * 判断点是否在多边形内（Turf.js 或自写简单点-in-polygon）
- * 这里提供一个二维平面射线法示例，精度够用于商业画像
- */
-function pointInPolygon(
-  point: { lat: number; lng: number },
-  polygon: Array<{ lat: number; lng: number }>
-) {
-  let x = point.lng,
-    y = point.lat;
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    let xi = polygon[i].lng,
-      yi = polygon[i].lat;
-    let xj = polygon[j].lng,
-      yj = polygon[j].lat;
 
-    let intersect =
-      yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
-    if (intersect) inside = !inside;
-  }
-  return inside;
-}
 //用turf判断点是否在面内
 function pointInPolygonTurf(
   pt: { lat: number; lng: number },

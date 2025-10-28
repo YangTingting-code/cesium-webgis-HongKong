@@ -61,8 +61,6 @@ export class CircleRenderer {
     chartData: Reactive<ChartData[]>,
     onDelete: () => void
   ) {
-    console.log('chartData', chartData);
-
     const popup = markRaw(
       new DynamicPopup({
         id: popupId,
@@ -74,7 +72,6 @@ export class CircleRenderer {
         onDelete,
       })
     );
-    console.log('popup', popup);
 
     this.popupInstances[pinEntityId] = popup;
   }

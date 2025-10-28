@@ -8,11 +8,10 @@ import type { SceneStateManager } from '@/service/cesium/takeaway/SceneManage/Sc
 import { useSceneLifecycle } from './useSceneLifecycle'
 import { ref } from 'vue'
 
-export function createRiderController(sceneManager: SceneStateManager) {
+export function useRiderController(sceneManager: SceneStateManager) {
   const isPolling = ref(false)
   let intervalId: number | null = null
   const { switchRider } = useSceneLifecycle(sceneManager)
-
 
   const startPolling = (intervalMS = 5000) => {
     if (intervalId) return
@@ -40,7 +39,6 @@ export function createRiderController(sceneManager: SceneStateManager) {
     }
 
   }
-
 
   return { startPolling, stopPolling, isPolling }
 }

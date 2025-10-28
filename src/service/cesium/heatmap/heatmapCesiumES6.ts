@@ -22,7 +22,6 @@ export function updateHeatmapData(
   layer.updateCanvasDataOnly(data);
 }
 
-let index = 0;
 /* ==========  对外唯一入口  ========== */
 /** 首次创建或以后每次替换数据都调用同一个函数 */
 export function updateHeatmapES6(viewer: any, points: any, heatmapOptions: {
@@ -31,8 +30,6 @@ export function updateHeatmapES6(viewer: any, points: any, heatmapOptions: {
   if (isRemoved.value) {
     heatLayer = null
   } //如果热力图之前在外面被移除过，那么就把heatlayer初始化为null
-  console.log('第几次进来', index++);
-  console.log("看看有没有heatLayer", heatLayer)
 
 
   const values = points.map((p) => {
@@ -70,7 +67,7 @@ export function updateHeatmapES6(viewer: any, points: any, heatmapOptions: {
   } else {
     // 3. 以后只换数据，不重创建
     updateHeatmapData(heatLayer, points, max, min); // 只刷数据   
-    console.log('heatLayer00000', heatLayer)
+
     // heatLayer.remove()
     /* const option = {
       gradient: {

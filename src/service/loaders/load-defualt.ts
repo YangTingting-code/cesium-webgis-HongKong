@@ -1,6 +1,5 @@
 import {
   mapbox_navigation_night,
-  mapbox_terrain_v2,
   standard_satellite
 } from '@/data/layersData'
 

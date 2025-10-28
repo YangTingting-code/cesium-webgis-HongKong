@@ -20,24 +20,54 @@
         class="takeaway-panel"
       >
         <div class="button-row top">
-          <el-button type="primary" plain :size=size  @click="playAnimation">
+          <el-button
+            type="primary"
+            plain
+            :size="size"
+            @click="playAnimation"
+          >
             开始
           </el-button>
-          <el-button type="primary" plain :size=size @click="pauseAnimation">
+          <el-button
+            type="primary"
+            plain
+            :size="size"
+            @click="pauseAnimation"
+          >
             暂停
           </el-button>
-          <el-button type="primary" plain :size=size  @click="resumeAnimation">
+          <el-button
+            type="primary"
+            plain
+            :size="size"
+            @click="resumeAnimation"
+          >
             继续
           </el-button>
-          <el-button type="primary" plain :size=size  @click="serviceClear">
+          <el-button
+            type="primary"
+            plain
+            :size="size"
+            @click="serviceClear"
+          >
             清除
           </el-button>
         </div>
         <div class="button-row bottom">
-          <el-button type="primary" plain :size=size  @click="followRider">
+          <el-button
+            type="primary"
+            plain
+            :size="size"
+            @click="followRider"
+          >
             视线跟随
           </el-button>
-          <el-button type="primary" plain :size=size  @click="removeFllow">
+          <el-button
+            type="primary"
+            plain
+            :size="size"
+            @click="removeFllow"
+          >
             取消跟随
           </el-button>
         </div>
@@ -59,7 +89,7 @@ import { ref, onMounted, inject, watch } from 'vue'
 import type { Ref } from 'vue'
 import {SceneStateManager} from '@/service/cesium/takeaway/SceneManage/SceneStateManager'
 import {useSceneStore} from '../../../../store/takeaway/sceneStore'
-import {createRiderController} from '@/composables/cesium/takeaway/createRiderController'
+import {useRiderController} from '@/composables/cesium/takeaway/createRiderController'
 import {ScenePersistence} from '@/service/cesium/takeaway/SceneManage/ScenePersistence'
 import {ClockController} from '@/service/cesium/takeaway/AnimationManage/ClockController'
 
@@ -92,6 +122,7 @@ const animationState = ref<any>(null)
  */
 async function initializeServices(viewer: Cesium.Viewer) {
   const existingManager = sceneStore.getManager()
+
   if(existingManager){
     sceneStateManager = existingManager
   }else{
@@ -100,7 +131,7 @@ async function initializeServices(viewer: Cesium.Viewer) {
   }
 
   sceneStore.setManager(sceneStateManager) //保存到pinia store 方便订单面板管理
-  const res = createRiderController(sceneStateManager)
+  const res = useRiderController(sceneStateManager)
   sceneStore.setPollingFns(res.startPolling,res.stopPolling)
 
   //开启轮询
@@ -120,11 +151,12 @@ async function startRiderAnimation() {
   }
 
   try {
-
+    //内部会自行判断是否初始化过 如果初始化过就回显完数据之后返回 不再初始化
+    sceneStateManager.initialize() //那么这个就是添加beforeunload监听的
+  
     let services = sceneStateManager?.getServices()
    
     const data = sceneStateManager.getData()
-
 
     if(!services || !data) return 
     
@@ -143,13 +175,11 @@ async function startRiderAnimation() {
     //如果此时已经有图钉entity就不再启动
     if(pointService?.hasEntity()) return
 
-
     if (!combinedOrder || !order0StartIso || !orderStepSegments) return
     
-    // // 设置动画数据 一次性把数据库里面所有的订单数据设置了
+    // // 设置动画数据 某个组合订单
     animationService!.setAnimationData(combinedOrder, orderStepSegments)
 
-    
     // 绘制起点终点 , 并注册和起点终点有关的鼠标（点击/移动）事件
     await pointService!.drawCombinedStops() // 见下一条
   
@@ -160,10 +190,6 @@ async function startRiderAnimation() {
 
     // 开始动画
     animationService!.startAnimation(combinedOrder.duration, order0StartIso)
-
-    // followRider() //手动让相机相机跟随 通知弹窗隐藏
-
-    console.log('骑手动画启动成功')
     
   } catch (error) {
     console.error('启动骑手动画失败:', error)
@@ -230,14 +256,12 @@ const serviceClear = ()=>{
   }
   
   clockController.resetClock()
-  // animationService.resetClock()
 
   //-----先把时钟恢复成东八区当前时间
 
   sceneStateManager.clear()
-
-
 }
+
 
 watch(
     [viewerRef, isReady],

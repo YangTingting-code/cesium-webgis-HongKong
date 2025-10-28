@@ -42,56 +42,7 @@ const softCap = (scene: string, area: number) => {
   return Math.max(700, Math.floor(base - decay)); // 理论峰值 - 稀释后的 = 该建筑的人流
 };
 
-/**
- * 空间平滑 + 随机扰动（后处理）
- * 只做一次，不依赖任何外部字段
- */
-function postProcess(points: any[], radiusM = 500) {
-  const R = 6371000;
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const dist = (a: any, b: any) => {
-    const dLat = toRad(b.lat - a.lat);
-    const dLon = toRad(b.lng - a.lng);
-    const lat1 = toRad(a.lat);
-    const lat2 = toRad(b.lat);
-    const x =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-    return 2 * R * Math.asin(Math.sqrt(x));
-  };
 
-  // 1. 计算 50% 分位，作为“低值屏蔽线”
-  const vals = points.map((p) => p.value);
-  vals.sort((a, b) => a - b);
-  const cutoff = vals[Math.floor(vals.length * 0.5)];
-
-  return points.map((p) => {
-    let sumWeight = 0;
-    let weighted = 0;
-
-    // 2. 只让“高值”参与平滑
-    points.forEach((q) => {
-      if (q.value < cutoff) return; // 🔥关键：低值不参与
-      const d = dist(p, q);
-      if (d > radiusM) return;
-      const w = Math.exp(-(d * d) / (2 * 200 * 200));
-      weighted += q.value * w;
-      sumWeight += w;
-    });
-
-    const smooth = sumWeight ? weighted / sumWeight : p.value;
-
-    // 3. S 型压缩，把最高值压回去
-    const maxVal = vals[vals.length - 1];
-    const norm = smooth / maxVal; // 0~1
-    const compressed = 1 / (1 + Math.exp(-12 * (norm - 0.7))); // S 曲线
-    const finalVal = Math.round(compressed * maxVal);
-
-    // 4. 轻微随机抖动
-    const jitter = 0.95 + Math.random() * 0.1;
-    return { ...p, value: Math.round(finalVal * jitter) };
-  });
-}
 // let debug: Record<string, BuildingPolygon[]> = {}
 const calcPeopleByArea = (b: BuildingPolygon, area: number, t: Date) => {
   const slot = slotNow(t);

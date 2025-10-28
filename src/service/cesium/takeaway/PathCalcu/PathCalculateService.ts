@@ -41,6 +41,7 @@ export class PathCalculationService {
     }
   }
 
+
   /**
    * 计算骑手位置和累计距离 以及记录骑手的下一个点的位置 因为骑手位置是根据两个点插值出来的,所以可以根据插值出来的点和下一个点当作相邻两个点计算方向向量
    * @param duration 骑行时间（秒）
@@ -50,15 +51,15 @@ export class PathCalculationService {
     const order = this.order0 // 局部引用
     if (!order) return 0 //前提是 order 数据准备好
 
-    // 如果骑行时间超过总时长，返回总距离
-    if (duration > this.order0.duration) {
+    // 如果骑行时间超过总时长，返回总距离 不过一般都不会触发这个 因为duration和百度给的时间是不一样的 只能采用绕开终点回显这个bug
+    if (duration >= this.order0.duration - 1e-3) {
       this.setDriverPositionToEnd()
       return order.distance
     }
 
+
     // 二分法找到第一个大于duration的step索引
     const stepIndex = this.findStepIndex(duration)
-
 
     // 计算 stepIndex 后，构造当前 step 的起始累计时长
     const prevStepCum = (() => {
@@ -80,6 +81,9 @@ export class PathCalculationService {
 
       seg = this.stepSegments[stepIndex][segIndex]
       if (!seg) {
+        // console.log('this.lastDistance', this.lastDistance)
+        // debugger
+        // return this.lastDistance
         return order.distance
       }
       // 对应seg的起始局部时间

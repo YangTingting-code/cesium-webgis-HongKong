@@ -87,7 +87,6 @@ import {
   ref,
   onMounted,
   onBeforeUnmount,
-  watch
 } from 'vue';
 import { title } from '../constant/index';
 import cesium from './cesium/index.vue';
@@ -104,8 +103,6 @@ provide('getViewer',(viewer:Viewer)=>{
 })
 
 provide('viewerInstance',viewerInstance)
-
-
 
 
 const loading = ref(true);

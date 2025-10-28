@@ -1,7 +1,6 @@
 import axios from 'axios';
 import * as Cesium from 'cesium';
 import coordtransform from 'coordtransform';
-import type { PolygonCoor, LinearRing } from '@/interface/globalInterface';
 import { terrainProvider } from '@/data/layersData'
 import { regions } from '@/data/regionHK'
 
@@ -9,8 +8,6 @@ import { regions } from '@/data/regionHK'
 // export async function data() {
 const data = await axios('/data/香港特别行政区.json')
 export const features = data.data.features
-// 这里的数据筛选要大家根据自己的json数据结构进行获取
-const arr = features[6].geometry.coordinates[0][0]
 
 //黑色掩膜
 const darkMask = [110, 10, 110, 30, 130, 30, 130, 10]

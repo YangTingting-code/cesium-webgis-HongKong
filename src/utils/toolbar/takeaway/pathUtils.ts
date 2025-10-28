@@ -1,6 +1,6 @@
 // utils/pathUtils.js
 import * as turf from '@turf/turf'
-import type { DeliveryOrder, SegmentType } from '../interface'
+import type { DeliveryOrder, SegmentType } from '@/interface/takeaway/interface'
 import * as Cesium from 'cesium'
 export const pathUtils = {
   densifyPath(path: [number, number][], step = 5) { //这是每隔5m采样一个点 点数会大幅度增加 能不能不采样?

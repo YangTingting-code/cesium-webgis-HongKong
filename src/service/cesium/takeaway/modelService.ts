@@ -25,7 +25,8 @@ export class ModelService {
    * @returns 
    */
   private createRiderModelEntity(getPosition: () => Cesium.Cartesian3, getOrientation: () => Cesium.Quaternion) {
-    const scaleCallback = this.createScaleCallback(getPosition)  //闭包工厂函数
+    const scaleCallback = throttle(this.createScaleCallback(getPosition), 30)
+    //闭包工厂函数
     this.riderEntity = this.viewer.entities.add({
       id: 'rider',
       //这个position 用的和轨迹线的一样 骑手位置应该比轨迹线高一点
@@ -50,9 +51,9 @@ export class ModelService {
   //根据照相机和模型之间的距离计算缩放比例
   private calScale(distance: number) {
     //用于计算模型缩放比例
-    const maxDistance: number = 2500
+    const maxDistance: number = 3000
     const minDistance: number = 500
-    const maxScale = 50
+    const maxScale = 60
     const minScale = 3
 
     const progress = Cesium.Math.clamp(
@@ -103,7 +104,7 @@ export class ModelService {
     // let i = 2
     // const frameThrottle = 2 // 每2帧更新一次
     //时间节流
-    let lastUpdateTime = 0
+    // let lastUpdateTime = 0
     //照相机位置
     let lastCamera = new Cesium.Cartesian3
 
@@ -115,9 +116,9 @@ export class ModelService {
       lastCamera = Cesium.Cartesian3.clone(cameraPos) // 更新
 
       // 时间节流：距离上次更新没有超过30ms就不更新模型大小
-      const now = Date.now()
-      if (now - lastUpdateTime < 30) return lastScale
-      lastUpdateTime = now
+      // const now = Date.now()
+      // if (now - lastUpdateTime < 30) return lastScale
+      // lastUpdateTime = now
 
       // 帧节流 ：控制每两帧更新
       // i++ //i++要写在前面 否则下次奇数进来的时候会被return 永远都不会变成偶数 被卡在外面了
@@ -219,9 +220,6 @@ export class ModelService {
       // 3. 最终摆相机
       this.viewer.camera.lookAtTransform(transform, localOffset) //骑手当前的矩阵4位置 + 相对于矩阵4的偏移量得到照相机的位置
     }
-
-
-
   }
 
   public setCameraBehindRider(
@@ -379,8 +377,6 @@ export class ModelService {
         console.warn('解除相机跟随失败', err)
       }
     })
-
-
 
   }
 

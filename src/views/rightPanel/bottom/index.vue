@@ -1,6 +1,6 @@
 <template>
   <div class="map-wrapper">
-    <div id="mapbox-container"></div>
+    <div id="mapbox-container" />
   </div>
 </template>
 

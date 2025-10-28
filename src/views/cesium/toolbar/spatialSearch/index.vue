@@ -1,6 +1,6 @@
 <template>
   <!-- <div v-if="isReady"> -->
-    <!-- 控制按钮 -->
+  <!-- 控制按钮 -->
   <div
     class="toggle-btn"
     :class="{ open: sidebarOpen }"
@@ -16,8 +16,8 @@
     class="sidebar"
     :class="{ open: sidebarOpen }"
   >
-      <!-- 搜索方式 -->
-      <!-- <div 
+    <!-- 搜索方式 -->
+    <!-- <div 
         v-if="!showControl" 
         :class="{ open: sidebarOpen }"
         class="search"
@@ -33,7 +33,7 @@
         </div>
       </div> -->
 
-      <!-- 控制面板 -->
+    <!-- 控制面板 -->
     <div 
       v-if="showControl"
       :class="{ glow: isBtnHover }"
@@ -45,7 +45,7 @@
         <el-slider
           v-model="radius"
           :min="10"
-          :max="300"
+          :max="500"
           :step="10"
           show-input
         />
@@ -104,7 +104,7 @@
   const showControl = ref(true);
 
   // 默认搜索半径
-  const defaultRadius = 100;
+  const defaultRadius = 200;
   const radius = ref(defaultRadius);
 
   // 按钮状态
@@ -123,7 +123,7 @@
   });
 
 // 防抖处理
-const debounceWatch = debounce((newValue) => {
+const debounceWatch = debounce(() => {
   // 从本地拿lng,lat,pinEntityId数据
   const data = circleCtrl.dataMgr.getAll();
   Object.values(data).forEach(async (item) => {
@@ -140,7 +140,7 @@ const debounceWatch = debounce((newValue) => {
     circleCtrl.dataMgr.update(item.ids.pinEntityId, radius.value); //搜索圈本地数据更新
   });
 }, 600);
-
+//半径变化 根据搜索圈范围更新建筑样颜色 没有被覆盖到的建筑就不设置颜色
 watch(radius, debounceWatch);
 watch(
   [viewerRef, tilesetRef, isReady],
@@ -148,7 +148,6 @@ watch(
     if (ready && tRef && vRef) {
       if (!osmService) {
         osmService = new OSMBuildingService(tRef)
-        console.log("osmService 已初始化", osmService)
         reloadData(vRef) 
       }
     }
@@ -157,9 +156,10 @@ watch(
 )
 
 function reloadData(viewer:Cesium.Viewer){
+  //回显数据 
   const hasData = circleCtrl.init(viewer, radius, removeCircle); // 初始化（相机、圆圈、弹窗回显）
   // 如果有缓存数据（刷新场景）
-    if (hasData) {
+    if (hasData) { //如果搜索圈和弹窗回显了 进入这里 继续回显照相机 
       //相机 本地有数据才恢复成上一次刷新前照相机的位置
       const { destination, orientation } = JSON.parse(
         localStorage.getItem('cameraBeforeReload') || '{}'
@@ -171,7 +171,7 @@ function reloadData(viewer:Cesium.Viewer){
       isStartDisabled.value = true;
       isStopDisabled.value = false;
 
-      // 半径从缓存里恢复
+      // 半径从缓存里恢复 
       const searchData = circleCtrl.dataMgr.getAll();
       const firstKey = Object.keys(searchData)[0];
       const r = firstKey.split(',')[1];

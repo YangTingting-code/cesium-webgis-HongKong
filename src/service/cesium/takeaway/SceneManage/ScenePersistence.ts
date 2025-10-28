@@ -55,12 +55,12 @@ export const ScenePersistence = {
     return read('lastElapsed')
   },
   setLastElapsed(val: Json) {
+    val = Math.max(0, val - 20) //减去20ms 回显的时候可以继续走一段
     write('lastElapsed', val)
   },
   removeLastElapsed() {
     del('lastElapsed')
   },
-
 
   //是否绘制骑手路径中
   getIsPath() {
@@ -69,7 +69,6 @@ export const ScenePersistence = {
   setIsPath(value: Json) {
     write('isPath', value)
   },
-
 
   //弹窗
   getPopupShowState() {
@@ -105,15 +104,6 @@ export const ScenePersistence = {
     delLocal('combinedorderControl')
   },
 
-  getSecondLastCurr() {
-    return read('secondLastCurrentSegs')
-  },
-  setSecondLastCurr(val: Json) {
-    write('secondLastCurrentSegs', val)
-  },
-  removeSecondLastCurr() {
-    del('secondLastCurrentSegs')
-  },
 
   clearSessionKeys() {
     del('riderPosOri')

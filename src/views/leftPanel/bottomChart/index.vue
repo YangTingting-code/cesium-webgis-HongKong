@@ -1,15 +1,14 @@
 <template>
   <div class="chart-wrapper">
-    <div class="orders-chart"></div>
+    <div class="orders-chart" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import {convertToHeatmapData,convertToLineArea,renderLineArea} from '@/utils/leftPanel/chartDataUtils'
+import {convertToLineArea,renderLineArea} from '@/utils/leftPanel/chartDataUtils'
 
 onMounted(async ()=>{
-  const heatmapData = await convertToHeatmapData()
   const chartDom = document.querySelector('.orders-chart') as HTMLElement
 
   const series = convertToLineArea()

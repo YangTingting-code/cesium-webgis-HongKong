@@ -7,8 +7,6 @@ export async function loadOSMBuildings(viewer: Cesium.Viewer) {
   viewer.scene.globe.enableLighting = true
   viewer.shadows = false //模拟日照光影 光影会影响泛光的统一亮度
 
-
-
   return tileset;
 }
 

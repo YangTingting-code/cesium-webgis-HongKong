@@ -1,6 +1,6 @@
 import type { Position } from '@/interface/globalInterface';
 import * as Cesium from 'cesium'
-
+import { terrainProvider } from '@/data/layersData'
 export class TerrainService {
   private static inst: TerrainService
   private provider: Cesium.TerrainProvider | null = null;
@@ -15,7 +15,8 @@ export class TerrainService {
   async toCartesian3(points: Position[]) {
     if (!this.provider) {
       //准备地形提供器
-      this.provider = await Cesium.createWorldTerrainAsync()
+      this.provider = terrainProvider //不用cesium提供的地形服务 因为额度几乎被用完了。
+      // await Cesium.createWorldTerrainAsync()
     }
 
     // 1.1.2.1 准备需要更新高程信息的点位 经纬度转换为Array.<Cartographic>

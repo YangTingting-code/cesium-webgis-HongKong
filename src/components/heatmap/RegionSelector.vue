@@ -32,7 +32,9 @@ import {regions} from '@/data/regionHK'
 import {heatmapPersistence} from '@/service/cesium/heatmap/heatmap-persistence'
 
   const pickedRegion = ref(regions[0])
-  const emit = defineEmits(["chooseRegion",'saved','regionChanged'])
+  const emit = defineEmits(["chooseRegion",'saved',
+  // 'regionChanged'
+])
 
   function chooseRegion(){
     emit('chooseRegion',toRaw(pickedRegion.value))
@@ -48,8 +50,9 @@ import {heatmapPersistence} from '@/service/cesium/heatmap/heatmap-persistence'
     }
   })
 
+  //数据由于回显带来的更新
   watch(pickedRegion,()=>{
-    emit('regionChanged',toRaw(pickedRegion.value))
+    chooseRegion()
   })
 
 

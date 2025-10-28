@@ -9,10 +9,11 @@ export class InteractionService {
   private clickHandler: Cesium.ScreenSpaceEventHandler | null = null
   private moveHandler: Cesium.ScreenSpaceEventHandler | null = null
   private cameraHandlerBound: (() => void) | null = null
-
-  constructor(viewer: Cesium.Viewer, popupService: PopupService, private pinRender: PinRenderService) {
+  private pinRender: PinRenderService
+  constructor(viewer: Cesium.Viewer, popupService: PopupService, pinRender: PinRenderService) {
     this.viewer = viewer
     this.popupService = popupService
+    this.pinRender = pinRender
   }
 
   public bind() {

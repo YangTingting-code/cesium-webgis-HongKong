@@ -249,17 +249,13 @@ export class OrderStore {
   public async deleteMatrixSlotKey(region: string, slotKey: string) {
     const key = `categoryMatrix_${region}`
     const categoryMatrix: Record<string, Record<string, number>> | null = await this.timeslotStore.getItem(key)
-    console.log('删除之前的', categoryMatrix)
-    debugger
+
     if (categoryMatrix) {
       delete categoryMatrix[slotKey]
     }
-    console.log('删除之后的', categoryMatrix)
-    debugger
+
     this.timeslotStore.setItem(key, categoryMatrix)
-    const newCategoryMatrix = await this.timeslotStore.getItem(key)
-    console.log('newCategoryMatrix', newCategoryMatrix)
-    debugger
+
   }
 
   //检查 CombinedData 中的 key在子订单中是否存在
@@ -308,22 +304,14 @@ export class OrderStore {
     const key = region + '_' + timeslot + '_timeslotData'
 
     const data = await this.timeslotStore.getItem(key) as SlotData
-    console.log('删除之前data', JSON.parse(JSON.stringify(data)))
-    console.log('删除之前data.combinedOrders.length', Object.keys(data.combinedOrders).length)
-    console.log('需要删除的', riderCombinedIdArr)
-    console.log('需要删除的个数', riderCombinedIdArr.length)
-    debugger
+
     for (let i = 0; i < riderCombinedIdArr.length; i++) {
       //删除后数据
       delete data.combinedOrders[riderCombinedIdArr[i]]
       delete data.orderStepSegments[riderCombinedIdArr[i]]
     }
 
-    // console.log('删除之后data', JSON.parse(JSON.stringify(data)))
-    console.log('删除之后data.combinedOrders', data.combinedOrders)
-    console.log('删除之后data.combinedOrders.length', Object.keys(data.combinedOrders).length)
 
-    debugger
     //删除之后存入数据
     await this.timeslotStore.setItem(key, data)
   }
@@ -339,12 +327,8 @@ export class OrderStore {
 
   public async deleteCombinedDataTimeslot(region: string, timeslot: number) {
     const orders = await this.getOrder()
-    console.log('原始orders', (orders))
-    console.log('原始orders.length', Object.keys(orders).length)
-    debugger
 
     const start = `${region}_${timeslot}_`
-    console.log('start', start)
 
     const keys = Object.keys(orders)
     const targetkeys: string[] = []
@@ -354,13 +338,9 @@ export class OrderStore {
         targetkeys.push(k)
       }
     })
-    console.log('targetkeys', targetkeys)
-    console.log('targetkeys.length', targetkeys?.length)
-    debugger
+
     // await this.saveOrders(orders)
     for (let i = 0; i < targetkeys.length; i++) {
-      console.log(targetkeys[i])
-      debugger
       await this.store.removeItem(targetkeys[i])
     }
 

@@ -30,16 +30,19 @@ export class SceneStateManager {
   //全局状态驱动
   private globalStatusInterval: number | null = null
 
-  private combinedorderControl = ScenePersistence.getCombinedorderControl()
+  private combinedorderControl = ScenePersistence.getCombinedorderControl() //提前存在localstorage
   private currentTimeslot: number = this.combinedorderControl.currentTimeslot
   private currentRegion: string = this.combinedorderControl.currentRegion
-  private currentRiderIdx: number = this.combinedorderControl.currentRiderIdx
+  private currentRiderIdx: number = this.combinedorderControl.currentRiderIdx ?? 0
 
   private ridersIds: string[] = []
 
   // 类里新增字段
   private cameraService: CameraService | null = null
   private dataService = new DataService()
+
+  //服务是否初始化的标志
+  private isInitialized = false
 
   constructor(viewer: Cesium.Viewer) {
     this.viewer = viewer
@@ -118,6 +121,8 @@ export class SceneStateManager {
 
   // --- 初始化服务 --- //
   async initialize() {
+    if (this.isInitialized) return
+
     // 初始化服务 orders必须有值
     this.initServices()
 
@@ -133,9 +138,12 @@ export class SceneStateManager {
         this.viewer.clock.startTime
       )
     })
+
     if (ScenePersistence.getIsPath()) {
       await this.restoreScene()
     }
+
+    this.isInitialized = true
 
   }
 
@@ -193,6 +201,7 @@ export class SceneStateManager {
     const riderPosOri = ScenePersistence.getRiderPosOri()
 
     if (riderPosOri) {
+      //恢复骑手模型
       this.pathService.restoreRiderModel(riderPosOri.riderPos, riderPosOri.riderOri)
     }
     //路径数据设置 
@@ -205,10 +214,9 @@ export class SceneStateManager {
     // 新增： 读取上次保存的进度时间（s）  //延迟回显骑手的进度
     let lastElapsed = ScenePersistence.getLastElapsed()
 
-    lastElapsed = Math.max(0, lastElapsed - 20)
-
+    //具体计算骑手位置和朝向
     this.setTimeOutNumber = setTimeout(() => { //过一会在更新骑手位置
-      this.animationService?.seekToTime(lastElapsed, true)
+      this.animationService?.seekToTime(lastElapsed)
     }, 20)
 
     //弹窗回显 获取弹窗状态
@@ -231,6 +239,8 @@ export class SceneStateManager {
 
     //清理会话态持久化
     ScenePersistence.clearSessionKeys()
+
+    this.isInitialized = false
   }
 
   private destroyServices() {

@@ -11,11 +11,11 @@
         <template v-if="Object.keys(ordersInfo).length > 0">
           <div
             v-for="(value,key) in ordersInfo"
-            :key='key'
+            :key="key"
             class="order"
             :class="{'status-active': activeOrderSet.has(key)}"
           >
-            <span class="number">{{key}}</span>
+            <span class="number">{{ key }}</span>
       
             <div
               class="content"
@@ -23,13 +23,13 @@
               <div class="start">
                 <span>取餐点：</span>
                 <div class="address">
-                  {{ value['取餐点'].name +"，"+ value['取餐点'].street +"，"+value['取餐点'].housenumber}}
+                  {{ value['取餐点'].name +"，"+ value['取餐点'].street +"，"+value['取餐点'].housenumber }}
                 </div>
               </div>
               <div class="end">
                 <span>送餐点：</span>
                 <div class="address">
-                  {{ value['送餐点'].name +"，"+ value['送餐点'].description}}
+                  {{ value['送餐点'].name +"，"+ value['送餐点'].description }}
                 </div>
               </div>
             </div>
@@ -45,7 +45,10 @@
           </div>
         </template>
         <template v-else>
-          <el-skeleton :rows="5" animated/>
+          <el-skeleton
+            :rows="5"
+            animated
+          />
         </template>
       </div>
       <div class="foot">
@@ -59,15 +62,34 @@
         </div>
         <div class="select">
           <label for="timeslot">时间段</label>
-          <el-select id="timeslot" v-model="currentSlotKey" placeholder="选择时间段" size="small" popper-class="timeslot-dropdown">
-            <el-option value="morning">7点-10点</el-option>
-            <el-option value="lunch">10点-14点</el-option>
-            <el-option value="afternoon">14点-17点</el-option>
-            <el-option value="dusk">17点-20点</el-option>
-            <el-option value="night">20点-24点</el-option>
+          <el-select
+            id="timeslot"
+            v-model="currentSlotKey"
+            placeholder="选择时间段"
+            size="small"
+            popper-class="timeslot-dropdown"
+          >
+            <el-option value="morning">
+              7点-10点
+            </el-option>
+            <el-option value="lunch">
+              10点-14点
+            </el-option>
+            <el-option value="afternoon">
+              14点-17点
+            </el-option>
+            <el-option value="dusk">
+              17点-20点
+            </el-option>
+            <el-option value="night">
+              20点-24点
+            </el-option>
           </el-select>
         </div>
-        <el-button @click="changeOrder" size="small"> 
+        <el-button
+          size="small"
+          @click="changeOrder"
+        > 
           查看其他订单
         </el-button>
       </div>
@@ -76,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, onUnmounted, ref, watch} from 'vue'
+import { onUnmounted, ref, watch} from 'vue'
 import {useOrderStore} from '../../../store/takeaway/orderStore'
 
 import {useSceneStore} from '@/store/takeaway/sceneStore'
@@ -137,6 +159,7 @@ let timeoutId : number | null = null
 const sceneStore = useSceneStore()
 let sceneManager :SceneStateManager | null
 watch(()=>sceneStore.isReady,async (ready)=>{
+  
   if(ready){
     sceneManager = sceneStore.getManager()
     if(sceneManager){
@@ -245,12 +268,6 @@ watch(()=>orderStorePinia.orderStatusMap,()=>{
   },600)
 
 },{deep:true})
-
-
-
-onMounted(()=>{
-
-})
 
 function changeOrder(){
   if(!sceneManager){

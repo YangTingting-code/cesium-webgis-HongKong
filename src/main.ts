@@ -17,11 +17,10 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { createPinia } from 'pinia';
 
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-
+// import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 const pinia = createPinia();
-pinia.use(piniaPluginPersistedstate) //持久化插件
+// pinia.use(piniaPluginPersistedstate) //持久化插件
 const app = createApp(App);
 
 app.use(ElementPlus, {

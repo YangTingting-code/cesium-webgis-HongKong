@@ -45,8 +45,7 @@ export class OSMBuildingService {
     }
 
     // 3. 分类
-    const { classifiedBuildings, categoryIds } =
-      this.classifier.classifyBuildingsBatch(buildings);
+    const { classifiedBuildings, categoryIds } = this.classifier.classifyBuildingsBatch(buildings);
 
     // 4. 区域分析
     const { amountFourType, eachAreaFourType } = this.analyzer.regionStructure(

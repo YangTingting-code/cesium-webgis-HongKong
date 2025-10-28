@@ -1,3 +1,4 @@
+//将来 已经过
 export const futurePathShaderSource = `
   uniform vec4 color;               //传入颜色
   uniform float percent;           // 光带长度比例 (米数/总长)
@@ -17,10 +18,11 @@ export const futurePathShaderSource = `
 
       outColor.a = 0.0; //默认透明度为0
 
-      if(st.s > startPosition - percent && st.s < startPosition){
-        float value = (st.s - (startPosition - percent)) / percent;
-        outColor.a = value;
-      }
+      float stS = fract(st.s - startPosition + 1.0); //环形 首尾相连 计算像素与开始发光的地方的相对位置
+      outColor.a = clamp(stS / percent, 0.0, 1.0); //钳制在0-1之间 小于0为0  大于1为1
+      // if(stS < percent){
+      //   outColor.a = 1.0 - stS / percent;
+      // }
 
       material.diffuse = czm_gammaCorrect(outColor.rgb);
       material.alpha = outColor.a; 
@@ -29,6 +31,7 @@ export const futurePathShaderSource = `
   }
 `
 
+//当前
 export const pathShaderSource = `
   uniform float progress;          // 光带中心 (0~1)
   uniform float percent;           // 光带长度比例 (米数/总长)
@@ -52,7 +55,7 @@ export const pathShaderSource = `
     // 2. 动态光带 (骑手当前位置)
     // =====================
     float dist = abs(st.s - progress);
-    float halfLen = percent / 2.0;
+    float halfLen = percent / 2.0; //表示光带长度的一般 这样能让光带在骑手两侧各是0.1
 
     float intensity = smoothstep(halfLen, 0.0, dist);
     // float intensity = exp(-pow(dist / halfLen, 2.0));

@@ -26,9 +26,9 @@ export const img_cia = new Cesium.WebMapTileServiceImageryProvider({
 });
 
 //osm矢量
-const osm = new Cesium.OpenStreetMapImageryProvider({
-  url: 'https://tile.openstreetmap.org/'
-})
+// const osm = new Cesium.OpenStreetMapImageryProvider({
+//   url: 'https://tile.openstreetmap.org/'
+// })
 
 // mapbox 栅格影像底图 
 export const mapbox_terrain_v2 = new Cesium.MapboxImageryProvider({

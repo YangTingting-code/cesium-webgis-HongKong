@@ -31,8 +31,10 @@ export function applyBaselayer(viewer: Cesium.Viewer, tileset: Cesium.Cesium3DTi
       tileset.customShader = createBuildingShaderGrouped(mapId as keyof typeof buildingShaderColorSchemeGrouped)
   }
   if (isFilterActive() && mapId !== 'Cesium_Ion') { //如果当前处于滤镜状态并type不是tile类型的 需要移除并且重建globe
-    modifyMap(viewer, false)
+    // modifyMap(viewer, false)
     forceReloadGlobe(viewer)
+    modifyMap(viewer, false)
+
   }
 
   mapPersistence.setMapstyle(mapId)

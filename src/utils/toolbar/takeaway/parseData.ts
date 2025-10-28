@@ -1,4 +1,4 @@
-import type { NodePoint, BuildingPolygon, DeliveryNodes } from '../interface'
+import type { NodePoint, BuildingPolygon, DeliveryNodes } from '@/interface/takeaway'
 
 //找出外卖店
 export function isDeliveryShop(nodePoints: NodePoint[]) {

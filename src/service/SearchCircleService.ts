@@ -2,7 +2,6 @@ import { createHighlightManager } from '@/views/cesium/interactions/spatialSearc
 import * as Cesium from 'cesium';
 import {
   queryOSM,
-  updateChartDataAndHighlight,
 } from '@/views/cesium/interactions/spatialSearch/raw/OSMBuilding';
 import DynamicPopup from '@/service/cesium/spatialSearch/DynamicPopup';
 import { reactive, ref } from 'vue';

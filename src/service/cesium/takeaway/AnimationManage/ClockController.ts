@@ -56,7 +56,7 @@ export class ClockController {
   }
 
   stopAnimation() {
-    if (!this.viewer || !this.viewer.isDestroyed()) return
+    // if (!this.viewer || !this.viewer.isDestroyed()) return
     this.viewer.clock.shouldAnimate = false
   }
 

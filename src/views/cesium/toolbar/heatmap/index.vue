@@ -1,6 +1,6 @@
 <template>
-  <!-- v-show="isReady" -->
-  <div 
+  <div
+    v-show="isReady"
     :class="{open:sidebarOpen}"
     class="toggle-btn" 
     @mouseenter="isBtnHover = true"
@@ -10,8 +10,8 @@
     <span> {{ sidebarOpen ? '关闭':'热力图' }} </span>
   </div>
 
-  <!-- v-show="isReady" -->
   <heatmapControler 
+    v-show="isReady"
     :glow="isBtnHover"
     :viewer-ref="viewerRef"
     :class="{open:sidebarOpen}"
@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted,inject,type Ref,ref,watch} from 'vue';
+import { onMounted, onUnmounted,inject,type Ref,ref} from 'vue';
 import { flowWeek } from '@/service/cesium/heatmap/FlowWeek';
 import { loadData } from '@/data/heatmap/loadData';
 import {updateHeatmapData } from '@/service/cesium/heatmap/heatmapCesiumES6';

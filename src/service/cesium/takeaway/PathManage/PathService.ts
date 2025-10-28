@@ -5,11 +5,11 @@ import { PathGeometryService } from './PathGeometryService'
 import { PathRenderService } from './PathRenderService'
 import * as Cesium from 'cesium'
 import { pathUtils } from '@/utils/toolbar/takeaway/pathUtils'
-import { PathCalculationService } from '@/service/cesium/takeaway/PathCalcu/index'
+import { PathCalculationService } from '@/service/cesium/takeaway/PathCalcu/PathCalculateService'
 import { ModelService } from '@/service/cesium/takeaway/modelService'
 import type { CombinedOrder, SegmentType, SegmentBuckets } from '@/interface/takeaway/interface'
 import type { Position } from '@/interface/globalInterface'
-import { ScenePersistence } from '../SceneManage/ScenePersistence'
+import { ScenePersistence } from '../SceneManage/ScenePersistence';
 
 export class PathService {
 
@@ -65,7 +65,55 @@ export class PathService {
     const pastPoints = this.collectPoint(pastSegs)
     const currentPoints = this.collectPoint(currentSegs)
     const futurePoints = this.collectPoint(futureSegs)
-    this.pathRenderService.drawBuckets(pastPoints, currentPoints, futurePoints)
+    //等距离采样 只有中间需要光带跟随骑手运动的需要
+    const sampledcurrPts = this.resamplePathByDistance(currentPoints, 1)
+    this.pathRenderService.drawBuckets(pastPoints, sampledcurrPts, futurePoints)
+  }
+
+
+  /**
+ * 将路径按实际距离重新采样为等间距点
+ * @param {Cesium.Cartesian3[]} points 原始路径点
+ * @param {number} step 采样间距（米），默认 5 米
+ */
+  private resamplePathByDistance(points: Cesium.Cartesian3[], step = 5): Cesium.Cartesian3[] {
+    if (points.length < 2) return points
+
+    // 1️⃣ 计算原路径的分段长度
+    const segmentLengths: number[] = []
+    let totalLength = 0
+    for (let i = 0; i < points.length - 1; i++) {
+      const d = Cesium.Cartesian3.distance(points[i], points[i + 1])
+      segmentLengths.push(d)
+      totalLength += d
+    }
+
+    // 2️⃣ 计算要生成的点数
+    const newPoints: Cesium.Cartesian3[] = [points[0]]
+    let currentDist = step
+    let segIndex = 0
+
+    // 3️⃣ 逐段插值生成新点
+    while (currentDist < totalLength && segIndex < segmentLengths.length) {
+      const segLen = segmentLengths[segIndex]
+      const p1 = points[segIndex]
+      const p2 = points[segIndex + 1]
+
+      if (currentDist > segLen) {
+        currentDist -= segLen
+        segIndex++
+      } else {
+        // 当前段插值比例
+        const ratio = currentDist / segLen
+        const interp = Cesium.Cartesian3.lerp(p1, p2, ratio, new Cesium.Cartesian3())
+        newPoints.push(interp)
+        currentDist += step
+      }
+    }
+
+    // 4️⃣ 加上终点
+    newPoints.push(points[points.length - 1])
+    return newPoints
   }
 
 
@@ -94,19 +142,41 @@ export class PathService {
     return result
   }
 
-
+  //因为取餐点和送货点有时候不在路边 路径规划时终点是吸附在目标点最近的道路上的，如果没有保留最后一个点的话会导致路径绘制出来不合理，有突然转向不沿道路的问题
+  private findEndSeg() {
+    //每个里程碑最后一段的终点都要塞进去
+    const legs = this.pathGeometryService.getLegs()
+    // 收集里程碑最后一个
+    const endSegs = legs.map(l => l.segmentIndices.at(-1))   // 不用pop 不修改原数组
+    return endSegs
+  }
   private collectPoint(indices: number[]): Cesium.Cartesian3[] {
+    const endSegs = this.findEndSeg()
+
     const pointsC3: Cesium.Cartesian3[] = [];
     for (let i = 0; i < indices.length; i++) {
       const flattened = this.getFlattened()
-      const seg = flattened[indices[i]].segment;
+      const segIndex = indices[i]
+      const seg = flattened[segIndex].segment;
       // 重新构造“干净”的 Cartesian3
       pointsC3.push(
         seg.startC3?.x && seg.startC3?.y && seg.startC3?.z
           ? new Cesium.Cartesian3(seg.startC3.x, seg.startC3.y, seg.startC3.z)
           : Cesium.Cartesian3.fromDegrees(seg.start[0], seg.start[1])
-      );
+      )
+
+      //找到送货点、取餐点 ，因为这些可能不在路边，路径规划是把目标点吸附在最近的道路上，那这样的话我future和past没有给里程碑分界的那一段做包边，里程碑所在的那一段需要塞入起点和终点，如果只是塞起点，那么终点（吸附道路上那个点）就丢失了，导致future和past路径不连贯，直接用里程碑所在那一段的起点和送货点的经纬度连接。
+      if (endSegs.includes(segIndex)) {
+        pointsC3.push(
+          seg.endC3?.x && seg.endC3?.y && seg.endC3?.z
+            ? new Cesium.Cartesian3(seg.endC3.x, seg.endC3.y, seg.endC3.z)
+            : Cesium.Cartesian3.fromDegrees(seg.end[0], seg.end[1])
+        )
+      }
+
+      //最后一段，把终点push进去
       if (i === indices.length - 1) {
+
         pointsC3.push(
           seg.endC3?.x && seg.endC3?.y && seg.endC3?.z
             ? new Cesium.Cartesian3(seg.endC3.x, seg.endC3.y, seg.endC3.z)
@@ -116,7 +186,6 @@ export class PathService {
     }
     return pointsC3;
   }
-
 
   public async initPath(path: [number, number][], options: any) {
     const {
@@ -187,51 +256,32 @@ export class PathService {
   }
 
 
-  /**
-   * 更新骑手位置和路径进度（基于精确计算）
-   * @param duration 骑行时间（秒）
-   */
-  public updateRiderByDuration(duration: number, currentSegs: number[], isDataReload: boolean) {
-    // 使用精确算法计算累计距离
+  public getCumDistance(duration: number) {
     const cumDistance = this.pathCalculationService.calculateDriverPosition(duration)
-
-    // 更新骑手位置
-    this.riderPosition = this.pathCalculationService.getDriverPosition() //获取pathCalculationService 调用calculateDriverPosition 计算更新后的riderPosition
-    //更新骑手方向
-    this.orientation = this.pathCalculationService.getDriverOrientation() //和riderPosition 同理
-
-    // 更新路径材质进度
-    this.updatePathProgressByDistance(cumDistance, currentSegs, isDataReload)
-
     return cumDistance
   }
 
-  public getCumDistance(duration: number) {
-    const cumDistance = this.pathCalculationService.calculateDriverPosition(duration)
-
+  public updateRiderPosOri() {
     this.riderPosition = this.pathCalculationService.getDriverPosition() //获取pathCalculationService 调用calculateDriverPosition 计算更新后的riderPosition
-    //更新骑手方向
+    // //更新骑手方向
     this.orientation = this.pathCalculationService.getDriverOrientation() //和riderPosition 同理
-
-    return cumDistance
+  }
+  public updateRiderPosOriBySession() {
+    // 更新骑手位置
+    const { riderOri, riderPos } = ScenePersistence.getRiderPosOri()
+    this.riderPosition = riderPos
+    this.orientation = riderOri
   }
 
   /**
    * 根据累计距离更新路径进度 全局累计距离 转换 成局部累计距离
    */
-  public updatePathProgressByDistance(cumDistance: number, currentSegs: number[], isDataReload: boolean): number | null {
+  public updatePathProgressByDistance(cumDistance: number, currentSegs: number[]): number | null {
 
-    let secondLastCurrentSegs
     let startSegIdx = currentSegs[0]
     let endSegIdx = currentSegs[currentSegs.length - 1]
 
     if (startSegIdx == null || endSegIdx == null || startSegIdx >= this.getFlattened().length) return null
-
-    if (isDataReload && currentSegs.length < 1) { //显性知道骑手当前是在倒数第二个buckets轨迹？
-      secondLastCurrentSegs = ScenePersistence.getSecondLastCurr()
-      startSegIdx = secondLastCurrentSegs[0]
-      endSegIdx = secondLastCurrentSegs[secondLastCurrentSegs.length - 1]
-    }
 
     const flattened = this.getFlattened()
 
@@ -240,8 +290,7 @@ export class PathService {
     const endGlobal = flattened[endSegIdx].globalEnd
     // this.flattenedSegments[endSegIdx].globalEnd
 
-    if (
-      !this.pathRenderService.getCurr() || !this.pathCalculationService) return null
+    if (!this.pathRenderService.getCurr() || !this.pathCalculationService) return null
 
     const order0 = (this.pathCalculationService as any).order0
     if (!order0 || order0.distance === 0) return null
@@ -249,6 +298,7 @@ export class PathService {
     const progress = Math.min((cumDistance - startGlobal) / (endGlobal - startGlobal), 1)
 
     this.updatePathProgress(progress)
+    console.log('progress', progress)
     return progress
   }
 

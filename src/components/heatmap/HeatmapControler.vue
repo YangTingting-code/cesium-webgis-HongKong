@@ -15,15 +15,16 @@
               :save-regions="saveRegions"
               @choose-region="chooseRegion"
               @saved="toggleClear"
-              @region-changed="regionChanged"
             />
+            <!-- @region-changed="regionChanged" -->
             <RampSelector
               :clear-select="clearSelection"
               :save-ramp="saveRamp"
-              :apply-ramp="applyRamp"
               @apply="onRampApply" 
               @saved="toggleClear"
             />
+            <!-- :apply-ramp="applyRamp" -->
+            <!-- @ramp-changed="gradientChanged" -->
           </div>
           <div class="time-range">
             <span class="demonstration">时间范围</span>
@@ -90,14 +91,14 @@
               type="primary"
               native-type="submit"
               plain
-              :size=size
+              :size="size"
             >
               开始绘制
             </el-button>
             <el-button
               type="primary"
               plain
-              :size=size
+              :size="size"
               @click.stop="emitPause"
             >
               停止绘制
@@ -105,7 +106,7 @@
             <el-button
               type="primary"
               plain
-              :size=size
+              :size="size"
               @click.stop="emitPlay()"
             >
               继续绘制
@@ -113,7 +114,7 @@
             <el-button
               type="primary"
               plain
-              :size=size
+              :size="size"
               @click.stop="emitToClear"
             >
               清空热力图
@@ -121,15 +122,15 @@
             <el-button
               type="primary"
               plain
-              :size=size
-              @click.stop="save"
+              :size="size"
+              @click.stop="userSave"
             >
               保存配置
             </el-button>
             <el-button
               type="primary"
               plain
-              :size=size
+              :size="size"
               @click.stop="clear"
             >
               清空配置
@@ -215,7 +216,7 @@ onMounted(()=>{
         1: "rgba(165,0,38,1)",
       },
       date:[yesterday,today], //默认时间范围
-      regions:['九龙城区']
+      regions:['九龙城区'] //没有和region选择器联动 
     }
     Object.assign(form,defaultForm)
     save() //存入本地
@@ -234,6 +235,15 @@ watch(()=>props.viewerRef,(newValue)=>{
 const saveRegions = ref([''])
 const saveRamp = ref(false)
 
+const userSave = ()=>{
+  heatmapPersistence.saveOpion(form)
+  saveRamp.value = true
+  ElMessage({
+      message: '配置已保存到本地。',
+      type: 'success',
+      offset:100
+    })
+}
 const save = ()=>{
   heatmapPersistence.saveOpion(form)
   saveRamp.value = true
@@ -241,15 +251,22 @@ const save = ()=>{
 
 const clear =()=>{
   heatmapPersistence.removeOption()
+  ElMessage({
+      message: '配置已从本地清除。',
+      type: 'success',
+      offset:100
+    })
 }
 
 const emits = defineEmits(['clearHeatmap','pause','play','startDraw'])
 
 //保存热力图选择的区域 点击开始绘制时才移动过去
-let heatmapRegions :string[] = heatmapPersistence.getHeatmapRegions()
-let heatmapGradient:Record<string,string> = heatmapPersistence.getGradient()
+let heatmapRegions :string[] 
+// = heatmapPersistence.getHeatmapRegions()
+let heatmapGradient:Record<string,string>
+//  = heatmapPersistence.getGradient() 还是有机会拿到过时的数据
 
-const applyRamp = ref(false)
+// const applyRamp = ref(false)
 const emitStartDraw = ()=>{
   if(!heatmapRegions || heatmapRegions.length < 1){
       ElMessage({
@@ -262,9 +279,10 @@ const emitStartDraw = ()=>{
 
   //需要选择色带
    // 每次绘制前都从 persistence 里取最新 gradient
-  const latestGradient = heatmapPersistence.getGradient()
-
-  if(!heatmapGradient || !latestGradient){
+  // const latestGradient = heatmapPersistence.getGradient()
+  if(!heatmapGradient || Object.keys(heatmapGradient).length < 1
+  // || !latestGradient
+){
     // 警告
     ElMessage({
       message: '绘制热力图前请选择色带。',
@@ -275,7 +293,7 @@ const emitStartDraw = ()=>{
   }
 
   // 同步 gradient 到 form
-  form.gradient = latestGradient
+  // form.gradient = latestGradient
 
   //选择日期范围不能是同一天
 if(form.date && JSON.stringify(form.date[0]) === JSON.stringify(form.date[1])){
@@ -323,10 +341,6 @@ function chooseRegion(regions:Array<string>){
   heatmapRegions = regions
 }
 
-function regionChanged(regions:Array<string>){
-  (form as any).regions = regions
-  heatmapRegions = regions
-}
 
 function onRampApply(gradient: Record<number, string>) {
   // 1. 保存配置到表单，便于存储 / 回显 

@@ -9,8 +9,8 @@
   import {classifyDeliveryNodes} from "./utils/parseData"
   import {generateDeliveryOrders} from "./utils/generateOrders"
   import {OrderStore} from './db/OrderStore'
-  import {driver,driverPosition,drawStartEnd,lnglat2Car3} from './drawPolyline/preparePathData'
-  import {dynamicPolylineVolumeCustom,myMaterial_PV} from './drawPolyline/dynamicLine'
+  import {driver,driverPosition,drawStartEnd,lnglat2Car3} from './drawPolyline/preparePathData-nouse'
+  import {dynamicPolylineVolumeCustom,myMaterial_PV} from './drawPolyline/dynamicLine-nouse'
   import * as turf from '@turf/turf'
 
   import * as Cesium from 'cesium'
