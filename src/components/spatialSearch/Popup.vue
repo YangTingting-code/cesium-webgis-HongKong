@@ -1,35 +1,24 @@
 <!-- 控制弹窗的长相 -->
 <template>
-  <div
-    v-if="showRef"
-    :id="id"
-    class="divlabel-container"
+  <basePopup
+    v-model:show-ref="showRefRef"
+    :info="info"
   >
-    <div class="animate-maker-border">
-      <div class="head">
-        <span class="animate-marker__text">{{ title }}</span>
-        <div
-          class="close-btn"
-          @click="closeClick"
-        >
-          X
-        </div>
-      </div>
-      <div class="chart">
-        <rose-chart :series-data="chartData" />
-      </div>
-      <div class="clear">
-        <button @click="clearCircle">
-          删除搜索圈
-        </button>
-      </div>
-    </div>
-  </div>
+    <template #body>
+      <rose-chart :series-data="chartData" />
+    </template>
+    <template #foot>
+      <button @click="clearCircle">
+        删除搜索圈
+      </button>
+    </template>
+  </basePopup>
 </template>
 
 <script lang="ts" setup>
 import { ref, type Ref } from 'vue';
 import roseChart from './RoseChart.vue';
+import basePopup from '../common/BasePopup.vue'
 
 interface Props {
   title?: string;
@@ -50,15 +39,10 @@ const {
   id: 'default-id'
 })
 
-const showRefRef = showRef as Ref<boolean>; // 类型断言
-const title = ref(propTitle);
-const id = ref(propId || '001');
+const showRefRef = showRef as Ref<boolean> // 类型断言 为什么这样之后就可以修改类传过来的showref?
+const title = ref(propTitle)
+const info = {title:title.value}
 
-//会不会和之前在类里写好的toggle冲突？ 不会 因为都是用showRef控制
-function closeClick() {
-  //如果showRef.value是true 那就关闭
-  showRefRef.value = false;
-}
 //清除这个搜索圈
 function clearCircle() {
   removeCircle();
@@ -66,6 +50,35 @@ function clearCircle() {
 </script>
 
 <style lang="scss" scoped>
-// @import url('../assets/scss/popup.scss');
-@import '@/assets/scss/popup.scss';
+button {
+  display: inline-block;
+  padding: 6px 16px;
+  border: 1px solid #38e1ff;
+  border-radius: 6px;
+  background: rgba(0, 50, 80, 0.45);
+  color: #38e1ff;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .5008px;
+  transition: all 0.25s ease;
+  text-shadow: 0 0 6px #38e1ff;
+  box-shadow:
+    inset 0 0 6px rgba(56, 225, 255, 0.5),
+    0 0 8px rgba(56, 225, 255, 0.4);
+  backdrop-filter: blur(2px);
+}
+
+button:hover {
+  background: rgba(56, 225, 255, 0.2);
+  color: #fff;
+  border-color: #5ef9ff;
+  box-shadow: 0 0 12px rgba(56, 225, 255, 0.8);
+  transform: translateY(-1px);
+  cursor: pointer;
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow: 0 0 6px rgba(56, 225, 255, 0.5);
+}
 </style>

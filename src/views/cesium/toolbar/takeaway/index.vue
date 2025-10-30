@@ -1,5 +1,5 @@
 <template>
-  <div v-show="viewerRef">
+  <div v-if="viewerRef">
     <!-- 控制按钮 -->
     <div 
       class="toggle-btn"

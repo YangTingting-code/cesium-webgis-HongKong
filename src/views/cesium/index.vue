@@ -23,7 +23,6 @@ function switchLayer(type: string) {
   if (!viewer || !tileset) return
 
   applyBaselayer(viewer,tileset,type)
- 
 }
 
 watch(

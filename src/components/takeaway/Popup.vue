@@ -1,53 +1,39 @@
 <!-- 控制弹窗的长相 -->
 <template>
-  <div
-    v-show="showRef"
-    :id="popupId"
-    class="divlabel-container"
-    :class="themeColor[title] || 'theme-default'"
+  <basePopup
+    v-model:show-ref="showRefRef"
+    :info="info"
   >
-    <div class="animate-maker-border">
-      <div class="head">
-        <span class="animate-marker__text">{{ title }}</span>
-        <div
-          class="close-btn"
-          @click="closeClick"
-        >
-          X
-        </div>
-      </div>
-      <div class="body">
-        <!-- 循环生成span容器 -->
+    <template #body>
+      <span 
+        v-for="([key,val],idx) in filteredEntries"
+        :key="idx"
+        class="info-line"
+      >
+        <span class="label">{{ labelMap[key] ?? key }}：</span>
+        <a 
+          v-if="isLink(val)"
+          class="link"
+          :href="val"
+          target="_blank"
+          rel="noopener noreferrer" 
+        > 
+          {{ val }}
+        </a>
         <span 
-          v-for="([key,val],idx) in filteredEntries"
-          :key="idx"
-          class="info-line"
-        >
-          <span class="label">{{ labelMap[key] ?? key }}：</span>
-          <a 
-            v-if="isLink(val)"
-            class="link"
-            :href="val"
-            target="_blank"
-            rel="noopener noreferrer" 
-          > 
-            <!-- target="_blank";rel="noopener noreferrer" 是什么意思 -->
-            {{ val }}
-          </a>
-          <span 
-            v-else
-            class="val"
-          >{{ val }}</span>
-
-          <br>
-        </span>
-      </div>
-    </div>
-  </div>
+          v-else
+          class="val"
+        >{{ val }}</span>
+        <br>
+      </span>
+    </template>
+  </basePopup>
 </template>
 
 <script lang="ts" setup>
-import { computed , type Ref } from 'vue';
+import { computed , type Ref} from 'vue';
+//测试弹窗组件
+import basePopup from '@/components/common/BasePopup.vue'
 
 //弹窗要显示的字段
 const whitelist:Record<string,string[]> = {
@@ -56,10 +42,25 @@ const whitelist:Record<string,string[]> = {
 }
 
 //弹窗边框颜色 class类名根据传入的title决定
-const themeColor: Record<string, string> = {
+const ThemeColor: Record<string, string> = {
   '外卖店': 'theme-takeaway',      // 绿色
   '目的地': 'theme-destination'    // 蓝色
 }
+
+// //默认宽高
+const {
+  showRef,
+  title,
+  options
+} = withDefaults(defineProps<Props>(),{
+  title:'默认'
+});
+
+const info = {
+  title:title,
+  themeColor:ThemeColor[title]
+}
+
 const filteredEntries = computed(() =>
   Object.entries(options).filter(([k]) =>
     (whitelist[title] || []).includes(k) //title是传入的字符串
@@ -79,30 +80,14 @@ const labelMap: Record<string,string> = {
   description:'描述'
 }
 
-
 interface Props {
   popupId: string;
   showRef: Ref<boolean>;
   title?: string;
   options:Record<string,string>
 }
-// //默认宽高
-const {
-  showRef,
-  popupId,
-  title,
-  options
-} = withDefaults(defineProps<Props>(),{
-  title:'默认'
-});
 
-const showRefRef = showRef as Ref<boolean>; // 类型断言
-
-
-//会不会和之前在类里写好的toggle冲突？ 不会 因为都是用showRef控制
-function closeClick() {
-  showRefRef.value = false;
-}
+const showRefRef = showRef as Ref<boolean> // 类型断言
 
 function isLink(val:string):boolean{
   return /^https?:\/\//.test(val)
@@ -111,5 +96,22 @@ function isLink(val:string):boolean{
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/popupInfo.scss';
+// @import '@/assets/scss/popupInfo.scss';
+
+.theme-takeaway {
+  background: linear-gradient(225deg, // 反向+更深
+      rgba(0, 150, 255, 0.25) 0%,
+      rgba(0, 90, 200, 0.18) 100%);
+  box-shadow:
+    inset 0 0 8px rgba(0, 150, 255, 0.50),
+    0 0 12px rgba(0, 150, 255, 0.35);
+}
+.theme-destination {
+  background: linear-gradient(45deg, // 更亮更浅
+      rgba(0, 230, 255, 0.28) 0%,
+      rgba(56, 225, 255, 0.20) 100%);
+  box-shadow:
+    inset 0 0 8px rgba(56, 225, 255, 0.55),
+    0 0 12px rgba(56, 225, 255, 0.38);
+}
 </style>

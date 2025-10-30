@@ -1,6 +1,6 @@
 // CircleRenderer.ts
 import * as Cesium from 'cesium';
-import DynamicPopup from '@/service/cesium/spatialSearch/DynamicPopup';
+import { DynamicPopup } from '@/service/cesium/spatialSearch/DynamicPopup';
 import { ref, markRaw, type Reactive, type Ref } from 'vue';
 import type { ChartData } from './ChartDataManager';
 

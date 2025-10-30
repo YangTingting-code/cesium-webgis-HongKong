@@ -8,7 +8,6 @@
         placeholder="选择行政区"
         multiple
         popper-class="region-dropdown"
-        @change="chooseRegion"
       >
         <el-option
           v-for="region in regions"
@@ -32,29 +31,26 @@ import {regions} from '@/data/regionHK'
 import {heatmapPersistence} from '@/service/cesium/heatmap/heatmap-persistence'
 
   const pickedRegion = ref(regions[0])
-  const emit = defineEmits(["chooseRegion",'saved',
-  // 'regionChanged'
-])
-
-  function chooseRegion(){
-    emit('chooseRegion',toRaw(pickedRegion.value))
-  }
+  const emit = defineEmits([
+    'update:heatmap-regions'
+  ])
 
   //清空热力图的时候把当前选择的清空
-  const props = defineProps<{clearSelect:boolean,saveRegions:string[]}>()
+  const props = defineProps<{
+    clearSelect:boolean,
+    heatmapRegions:string[]}>()
 
   watch(()=>props.clearSelect,(newValue)=>{
     if(newValue){
       pickedRegion.value = ''
-      emit('saved')
+      emit('update:heatmap-regions',[])
     }
   })
 
   //数据由于回显带来的更新
   watch(pickedRegion,()=>{
-    chooseRegion()
+    emit('update:heatmap-regions',toRaw(pickedRegion.value))
   })
-
 
   onMounted(()=>{
     //刷新之后回显/持久化数据回显 如果是刷新的话就回显刷新的数据  如果不是刷新就回显本地数据

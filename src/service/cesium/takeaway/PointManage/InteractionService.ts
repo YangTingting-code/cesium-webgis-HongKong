@@ -33,7 +33,7 @@ export class InteractionService {
 
   private bindClick() {
     this.clickHandler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
-    this.clickHandler.setInputAction((click: any) => {
+    this.clickHandler.setInputAction((click: Cesium.ScreenSpaceEventHandler.PositionedEvent) => {
       const picked = this.viewer.scene.pick(click.position)
       if (Cesium.defined(picked) && picked.id?._id) {
         this.popupService.toggle(picked.id._id)

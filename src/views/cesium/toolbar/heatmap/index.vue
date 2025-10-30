@@ -1,6 +1,6 @@
 <template>
+  <!-- v-show="isReady" -->
   <div
-    v-show="isReady"
     :class="{open:sidebarOpen}"
     class="toggle-btn" 
     @mouseenter="isBtnHover = true"
@@ -10,8 +10,8 @@
     <span> {{ sidebarOpen ? '关闭':'热力图' }} </span>
   </div>
 
+  <!-- v-show="isReady" -->
   <heatmapControler 
-    v-show="isReady"
     :glow="isBtnHover"
     :viewer-ref="viewerRef"
     :class="{open:sidebarOpen}"

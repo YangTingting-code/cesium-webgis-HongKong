@@ -6,8 +6,6 @@ import {
   getBBox
   // cartographic,
 } from '../../data/region/HKBoundary';
-// import { drawPolygon } from '@/service/PolygonService'
-// import { PolygonCenter } from '@/utils/geo/getFeaturesCenter';
 import * as Cesium from 'cesium'
 
 //改造成可以绘制多个的 ? 主要是视图那里要调整 多个区域的bbox

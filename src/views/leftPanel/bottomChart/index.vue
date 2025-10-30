@@ -1,21 +1,21 @@
 <template>
   <div class="chart-wrapper">
-    <div class="orders-chart" />
+    <LineAreaChart 
+      v-if="series"
+      :series-data="series" 
+      :width="width"
+      :height="height"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import {convertToLineArea,renderLineArea} from '@/utils/leftPanel/chartDataUtils'
-
-onMounted(async ()=>{
-  const chartDom = document.querySelector('.orders-chart') as HTMLElement
-
-  const series = convertToLineArea()
-
-  if(chartDom)
-renderLineArea(chartDom,series)
-})
+import {ref} from 'vue'
+import {convertToLineArea} from '@/utils/leftPanel/chartDataUtils'
+import LineAreaChart from '@/components/takeaway/LineAreaChart.vue'
+const series = ref(convertToLineArea() as any)
+const width = '100%'
+const height = '100%'
 
 </script>
 

@@ -9,26 +9,6 @@
         popper-class="ramp-dropdown"
         @change="apply"
       >
-        <!-- 输入框前缀：未选择时显示默认色带 -->
-        <!-- <template #prefix>
-          <div 
-            v-if="!pickedName"
-            class="ramp-mini"
-            :style="{background:gradientBar(defaultRamp)}"
-          />
-        </template> -->
-
-        <!-- 输入框选中显示 -->
-        <!-- <template #label="{value}">
-          <div class="ramp-option">
-            <span class="name"> {{ value }}</span>
-            <span
-              class="ramp-bar"
-              :style="{background:gradientBar(ramps.find(r=>r.name === value)!)}"
-            />
-          </div>
-        </template> -->
-
         <!-- 下拉菜单选项 -->
         <el-option
           v-for="r in ramps"
@@ -57,8 +37,9 @@ import { ramps } from '@/utils/toolbar/heatmap/colorRamps'
 import {heatmapPersistence} from '@/service/cesium/heatmap/heatmap-persistence'
 
 
-const emit = defineEmits<{ apply: [gradient: Record<number, string>], saved,
-  // 'rampChanged':[gradient: Record<number, string>]
+const emit = defineEmits<{ 
+  'update:heatmap-gradient':[gradient: Record<number, string>],
+  "update:clear-select":[boolean]
  }>()
 
 const pickedName = ref('')
@@ -69,22 +50,24 @@ function apply() {
   heatmapPersistence.setRamp(ramp)
   heatmapPersistence.setGradient(rampToGradient(ramp, 10))
 
-  emit('apply', rampToGradient(ramp, 10)) //保存数据到表单 开始绘制的时候可以拿到数据
+  emit('update:heatmap-gradient', rampToGradient(ramp, 10)) //保存数据到表单 开始绘制的时候可以拿到数据
 }
 
-const props = defineProps<{clearSelect:boolean,saveRamp:boolean
-  // ,applyRamp:boolean
+const props = defineProps<{
+  clearSelect:boolean,
+  saveRamp:boolean,
+  heatmapGradient:Record<string,string>,
 }>()
 //清空热力图的时候把当前选择的清空
 watch(()=>props.clearSelect,(newValue)=>{
   if(newValue){
       pickedName.value = ''
-      emit('saved')
+      emit('update:clear-select',false)
+      emit('update:heatmap-gradient', {})
     }
 })
 //回显回来的数据导致选择器改变 也要通知父组件应用
 watch(pickedName,()=>{
-
   apply()
 })
 
@@ -94,18 +77,6 @@ watch(()=>props.saveRamp,(newValue)=>{
     }
 })
 
-
-
-//应用持久化的色带
-// watch(()=>props.applyRamp,(newValue)=>{
-//   if(newValue){
-//       const localRamp = heatmapPersistence.getLocalRamp()
-//       if(localRamp) {
-//         pickedName.value = localRamp
-//         apply()
-//       }
-//     }
-// })
 
 onMounted(()=>{
     const ramp = heatmapPersistence.getRamp()
@@ -118,8 +89,6 @@ onMounted(()=>{
       heatmapPersistence.setGradient(rampToGradient(ramp, 10))
     }else if(localRamp){
       pickedName.value = localRamp
-      // heatmapPersistence.setGradient(rampToGradient(locaRramp, 10))
-      // apply()
     }
   })
 

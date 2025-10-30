@@ -1,4 +1,4 @@
-import InfoPopup from '../InfoPopup'
+import { InfoPopup } from '../InfoPopup'
 import type { NodePoint } from '@/interface/takeaway/interface'
 import * as Cesium from 'cesium'
 

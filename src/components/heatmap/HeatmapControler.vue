@@ -10,21 +10,16 @@
       <div class="body">
         <form @submit.prevent="emitStartDraw()">
           <div class="selection">
+            <!-- 可以用v-model做数据双向绑定 父子组件之间通信可以  -->
             <RegionSelector
+              v-model:heatmap-regions="heatmapRegions"
               :clear-select="clearSelection"
-              :save-regions="saveRegions"
-              @choose-region="chooseRegion"
-              @saved="toggleClear"
             />
-            <!-- @region-changed="regionChanged" -->
             <RampSelector
-              :clear-select="clearSelection"
+              v-model:heatmap-gradient="heatmapGradient"
+              v-model:clear-select="clearSelection"
               :save-ramp="saveRamp"
-              @apply="onRampApply" 
-              @saved="toggleClear"
             />
-            <!-- :apply-ramp="applyRamp" -->
-            <!-- @ramp-changed="gradientChanged" -->
           </div>
           <div class="time-range">
             <span class="demonstration">时间范围</span>
@@ -232,7 +227,7 @@ watch(()=>props.viewerRef,(newValue)=>{
   }
 })
 
-const saveRegions = ref([''])
+// const saveRegions = ref([''])
 const saveRamp = ref(false)
 
 const userSave = ()=>{
@@ -261,14 +256,13 @@ const clear =()=>{
 const emits = defineEmits(['clearHeatmap','pause','play','startDraw'])
 
 //保存热力图选择的区域 点击开始绘制时才移动过去
-let heatmapRegions :string[] 
-// = heatmapPersistence.getHeatmapRegions()
-let heatmapGradient:Record<string,string>
-//  = heatmapPersistence.getGradient() 还是有机会拿到过时的数据
+// let heatmapRegions :string[] 
+const heatmapRegions = ref<string[]>([])
+const heatmapGradient = ref<Record<string,string>>({})
 
-// const applyRamp = ref(false)
+
 const emitStartDraw = ()=>{
-  if(!heatmapRegions || heatmapRegions.length < 1){
+  if(!heatmapRegions.value || heatmapRegions.value.length < 1){
       ElMessage({
       message: '绘制热力图前请选择行政区。',
       type: 'warning',
@@ -278,11 +272,8 @@ const emitStartDraw = ()=>{
   } 
 
   //需要选择色带
-   // 每次绘制前都从 persistence 里取最新 gradient
-  // const latestGradient = heatmapPersistence.getGradient()
-  if(!heatmapGradient || Object.keys(heatmapGradient).length < 1
-  // || !latestGradient
-){
+  if(!heatmapGradient.value || Object.keys(heatmapGradient.value).length < 1
+  ){
     // 警告
     ElMessage({
       message: '绘制热力图前请选择色带。',
@@ -292,8 +283,6 @@ const emitStartDraw = ()=>{
     return 
   }
 
-  // 同步 gradient 到 form
-  // form.gradient = latestGradient
 
   //选择日期范围不能是同一天
 if(form.date && JSON.stringify(form.date[0]) === JSON.stringify(form.date[1])){
@@ -308,10 +297,9 @@ if(form.date && JSON.stringify(form.date[0]) === JSON.stringify(form.date[1])){
 
   emits('startDraw',form)
   //更新区域
-  regionStore.updateRegion(heatmapRegions)
+  regionStore.updateRegion(heatmapRegions.value)
 
 }
-
 
 const emitPause = ()=>{ //调整为子传父 emit 自定义事件？
    emits('pause')
@@ -329,29 +317,20 @@ const emitToClear = ()=>{
   clearSelection.value = true
   //清除会话态持久化
   heatmapPersistence.clearSessionKeys()
-
-  heatmapRegions = []
-  heatmapGradient = {}
-
-  emits('clearHeatmap')
   
-}
-function chooseRegion(regions:Array<string>){
-  (form as any).regions = regions
-  heatmapRegions = regions
+  emits('clearHeatmap')
 }
 
+watch(heatmapRegions,(newValue)=>{
+  (form as any).regions = newValue
+})
+watch(heatmapGradient,(newValue)=>{
+  (form as any).gradient = newValue
+})
 
-function onRampApply(gradient: Record<number, string>) {
-  // 1. 保存配置到表单，便于存储 / 回显 
-  (form as any).gradient = gradient   //保存到表单 用户点击“开始绘制”时父组件可以接收到数据
-  heatmapGradient = gradient
-  console.log("已应用新色带", gradient)
-}
-
-function toggleClear(){
-  clearSelection.value = false
-}
+// function toggleClear(){
+//   clearSelection.value = false
+// }
 
 </script>
 

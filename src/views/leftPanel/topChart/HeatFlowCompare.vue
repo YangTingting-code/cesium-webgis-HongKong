@@ -1,6 +1,5 @@
 <template>
   <div
-    ref="chartWrapper"
     class="chart-wrapper"
   >
     <!-- 图表容器 -->
@@ -35,7 +34,7 @@ import 'element-plus/es/components/slider/style/css'
 import { flowWeek } from '@/service/cesium/heatmap/FlowWeek'
 const size="small"
 const chartEl = ref<HTMLDivElement>()
-const chartWrapper = ref<HTMLDivElement>()
+// const chartWrapper = ref<HTMLDivElement>()
 let inst: echarts.ECharts
 
 /* --- 维度 --- */
