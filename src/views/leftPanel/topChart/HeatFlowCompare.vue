@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="chartWrapper"
     class="chart-wrapper"
   >
     <!-- 图表容器 -->
@@ -32,9 +33,11 @@ import * as echarts from 'echarts'
 import { ElSlider } from 'element-plus'
 import 'element-plus/es/components/slider/style/css'
 import { flowWeek } from '@/service/cesium/heatmap/FlowWeek'
+import throttle from 'lodash/throttle'
+
 const size="small"
 const chartEl = ref<HTMLDivElement>()
-// const chartWrapper = ref<HTMLDivElement>()
+const chartWrapper = ref<HTMLDivElement>()
 let inst: echarts.ECharts
 
 /* --- 维度 --- */
@@ -312,7 +315,6 @@ tooltip: {
 
 }
 
-
 /* --- 生命周期 --- */
 let map: RawMap
 let timer: number | null = null
@@ -340,7 +342,14 @@ function resumeTimer() {
   }
 }
 
+//图表大小随着容器大小变化
+let ro : ResizeObserver
+const resizeHandle = throttle(()=>inst.resize(),200)
+
 onMounted(async () => {
+  ro = new ResizeObserver(resizeHandle)
+  ro.observe(chartEl.value!)
+
   await nextTick()
   const raw = await flowWeek.averDiffRegionByDay()
   map = flatten(raw)
@@ -363,6 +372,7 @@ onMounted(async () => {
 onUnmounted(()=>{
   if(timer!==null) clearInterval(timer)
   if(resumeTimeout!==null) clearTimeout(resumeTimeout)
+  ro.disconnect()
 })
 
 /* --- 滑块事件 --- */
@@ -371,8 +381,8 @@ function onSliderChange(val:number){
     inst.setOption(makeOption(val,map))
   }
 }
-</script>
 
+</script>
 
 <style lang="scss" scoped>
 .chart-wrapper {

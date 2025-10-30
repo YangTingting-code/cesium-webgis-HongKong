@@ -1,12 +1,10 @@
 import {
-  // outlinePolygon,
-  // area,
   extractRegionGeometries,
   createLine3D,
   getBBox
-  // cartographic,
 } from '../../data/region/HKBoundary';
 import * as Cesium from 'cesium'
+import { setCameraPosition } from '@/utils/aboutCamera'
 
 //改造成可以绘制多个的 ? 主要是视图那里要调整 多个区域的bbox
 export async function makeRegionPoly(viewer: Cesium.Viewer, regions: string[] | string, isFly: boolean) {
@@ -21,9 +19,6 @@ export async function makeRegionPoly(viewer: Cesium.Viewer, regions: string[] | 
   for (let i = 0; i < regionsArr.length; i++) {
     // //绘制三维边界线
     const regionName = regionsArr[i]
-    // const lineId = `${regionName}-line3D`
-    // const existingLine = viewer.entities.getById(lineId)
-    // if (existingLine) viewer.entities.remove(existingLine)
 
     const line3D = await createLine3D(cartographicArr[i], regionName)
     viewer.entities.add(line3D)
@@ -34,15 +29,23 @@ export async function makeRegionPoly(viewer: Cesium.Viewer, regions: string[] | 
 
   //观看全局, 后面可以加一个角度
   const { west, south, east, north } = bounds
-  if (isFly) {
-    viewer.camera.flyTo({
-      destination: Cesium.Rectangle.fromDegrees(west, south, east, north),
-    })
+
+  const dist = JSON.parse(sessionStorage.getItem('cameraBeforeReload') || "{}")
+  if (Object.keys(dist).length > 0) {
+    setCameraPosition(viewer, dist.destination, dist.orientation)
   } else {
-    viewer.camera.setView({
-      destination: Cesium.Rectangle.fromDegrees(west, south, east, north),
-    })
+    if (isFly) {
+      viewer.camera.flyTo({
+        destination: Cesium.Rectangle.fromDegrees(west, south, east, north),
+      })
+    } else {
+      viewer.camera.setView({
+        destination: Cesium.Rectangle.fromDegrees(west, south, east, north),
+      })
+    }
   }
+
+
 
   //下面是局部视角
   // const center = PolygonCenter(outlinePolygon);
