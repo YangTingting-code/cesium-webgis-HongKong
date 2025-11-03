@@ -1,9 +1,7 @@
-import { createHighlightManager } from '@/views/cesium/interactions/spatialSearch/utils/manageOSMHighlight';
+import { createHighlightManager } from '@/utils/toolbar/spatialSearch/manageOSMHighlight';
 import * as Cesium from 'cesium';
-import {
-  queryOSM,
-} from '@/views/cesium/interactions/spatialSearch/raw/OSMBuilding';
-import DynamicPopup from '@/service/cesium/spatialSearch/DynamicPopup';
+import { OSMBuildingService } from '@/service/cesium/spatialSearch/OSMBuildingService'
+import { DynamicPopup } from '@/service/cesium/spatialSearch/DynamicPopup';
 import { reactive, ref } from 'vue';
 /* interface BuildingProfile {
   id: number; // OSM id
@@ -48,13 +46,13 @@ export class SearchCircleService {
   /**1.新增一个圈（外部只调这一行） */
   async add(lng: number, lat: number, radius: number) {
     const { ids, position } = this.renderEntities(lng, lat);
-    await queryOSM(
+    const OSMBuilding = new OSMBuildingService(this.tileset)
+
+    await OSMBuilding.query(
       lng,
       lat,
       radius,
       ids.pinEntityId,
-      this.chartData,
-      this.highlightMgr
     );
     this.renderPopup(
       ids.popupId,
@@ -101,7 +99,7 @@ export class SearchCircleService {
       JSON.parse(localStorage.getItem('chartDataManage') || '{}')
     );
     // 回显实体 & 高亮
-    Object.keys(this.circles).forEach((id) => this.redraw(id));
+    // Object.keys(this.circles).forEach((id) => this.redraw(id));
     return Object.keys(this.circles).length > 0;
   }
 
@@ -121,14 +119,13 @@ export class SearchCircleService {
     // 2. 重新查询建筑（缓存会生效）
     await Promise.all(
       Object.keys(this.circles).map(async (pinEntityId) => {
-        const { position } = this.circles[pinEntityId];
-        await queryOSM(
+        const { position } = this.circles[pinEntityId]
+        const OSMBuilding = new OSMBuildingService(this.tileset)
+        await OSMBuilding.query(
           position.lng,
           position.lat,
           newRadius,
           pinEntityId,
-          this.chartData,
-          this.highlightMgr
         );
       })
     );
