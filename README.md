@@ -1,6 +1,4 @@
-# Vue 3 + TypeScript + Vite
-
-香港智慧商圈平台（Hong Kong Smart Business District Platform）
+# 香港智慧商圈平台
 
 一个基于 Vue 3 + CesiumJS + TypeScript 的三维智慧商圈可视化平台。
 本项目实现了城市空间分析、POI 交互搜索、热力图展示、骑手配送轨迹仿真等功能，支持多源地理数据加载与交互分析。
