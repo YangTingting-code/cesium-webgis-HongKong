@@ -156,7 +156,7 @@ export const mapboxData = [
 
 export const tilesetData = [
   {
-    tilesetId: 'Cesium_Ion',
+    tilesetId: 'standard_satellite',
     description: 'Cesium Ion',
     url: tilesetPicUrl.Cesium_Ion
   }

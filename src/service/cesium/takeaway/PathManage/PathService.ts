@@ -242,6 +242,7 @@ export class PathService {
   }
 
   public setCameraByRiderPosOri() {
+
     this.modelService?.setCameraPosToRider(false, () => this.riderPosition, () => this.orientation)
   }
 

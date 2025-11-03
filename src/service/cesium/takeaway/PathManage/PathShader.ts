@@ -19,10 +19,12 @@ export const futurePathShaderSource = `
       outColor.a = 0.0; //默认透明度为0
 
       float stS = fract(st.s - startPosition + 1.0); //环形 首尾相连 计算像素与开始发光的地方的相对位置
-      outColor.a = clamp(stS / percent, 0.0, 1.0); //钳制在0-1之间 小于0为0  大于1为1
+
       // if(stS < percent){
-      //   outColor.a = 1.0 - stS / percent;
+        // outColor.a = 1.0 - stS / percent;
       // }
+
+      outColor.a = (1.0 - stS / percent) * step(stS, percent); //stS < percent 返回1
 
       material.diffuse = czm_gammaCorrect(outColor.rgb);
       material.alpha = outColor.a; 

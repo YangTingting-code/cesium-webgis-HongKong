@@ -10,6 +10,7 @@ import { Parser } from './OSM/Parser';
 import { RegionAnalyzer } from './OSM/RegionAnalyzer';
 import { Visualizer } from './OSM/Visualizer';
 import { Cesium3DTileset } from 'cesium';
+import { ElMessage } from 'element-plus'   // 或 AntD 的 
 
 export class OSMBuildingService {
   cache = new CacheManager();
@@ -39,9 +40,27 @@ export class OSMBuildingService {
 
     // 2. 缓存没命中 → 请求 Overpass
     if (!buildings) {
+      ElMessage({
+        message: '请求建筑数据中...',
+        type: 'primary',
+        duration: 0,
+        offset: 100
+      })
       const rawData = await this.client.fetch(lng, lat, radius);
+      ElMessage.closeAll()
+      ElMessage({
+        message: '请求建筑成功',
+        type: 'success',
+        offset: 100
+      })
       buildings = this.parser.parseOverpassBuildings(rawData);
       this.cache.write(lng, lat, radius, buildings, tuDingEntityId);
+    } else {
+      ElMessage({
+        message: '从本地获取数据',
+        type: 'primary',
+        offset: 100
+      })
     }
 
     // 3. 分类

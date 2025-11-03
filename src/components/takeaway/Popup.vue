@@ -50,11 +50,9 @@ const ThemeColor: Record<string, string> = {
 // //默认宽高
 const {
   showRef,
-  title,
+  title='默认',
   options
-} = withDefaults(defineProps<Props>(),{
-  title:'默认'
-});
+} = defineProps<Props>()
 
 const info = {
   title:title,

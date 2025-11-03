@@ -36,6 +36,7 @@ export const pathUtils = {
         stepSegments[index] = []
         return
       }
+      //下面这两个应该放在外面
       let cumduration = 0
       let cumdistance = 0
       const segments: SegmentType[] = [] //存储每一个step中seg的信息

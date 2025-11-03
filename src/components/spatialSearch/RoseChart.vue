@@ -16,12 +16,13 @@ interface SeriesDataItem {
 interface Props {
   width?: string;
   height?: string;
-  seriesData: SeriesDataItem[];
+  seriesData?: SeriesDataItem[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   width: '220px',
   height: '200px',
+  seriesData:()=>[]
 });
 
 

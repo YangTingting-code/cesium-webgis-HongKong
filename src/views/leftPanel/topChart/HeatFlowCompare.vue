@@ -19,16 +19,16 @@
         :marks="marks"
         :size="size"
         show-stops
-        @change="onSliderChange"
         @mouseenter="pauseTimer"
         @mouseleave="resumeTimer"
       />
+      <!-- @change="onSliderChange" -->
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, onUnmounted } from 'vue'
+import { ref, onMounted, nextTick, onUnmounted, watch } from 'vue'
 import * as echarts from 'echarts'
 import { ElSlider } from 'element-plus'
 import 'element-plus/es/components/slider/style/css'
@@ -324,7 +324,7 @@ function startTimer() {
   if(timer) return
   timer = window.setInterval(()=>{
     idx.value = idx.value % periods.length + 1
-    onSliderChange(idx.value)
+    // onSliderChange(idx.value)
   },3000)
 }
 
@@ -347,8 +347,6 @@ let ro : ResizeObserver
 const resizeHandle = throttle(()=>inst.resize(),200)
 
 onMounted(async () => {
-  ro = new ResizeObserver(resizeHandle)
-  ro.observe(chartEl.value!)
 
   await nextTick()
   const raw = await flowWeek.averDiffRegionByDay()
@@ -367,6 +365,10 @@ onMounted(async () => {
     inst.setOption({ legend: { selected: toSet } },false) //false 显式声明“合并更新”ECharts 不会重置整个图例状态，而是只把你给的 selected 补丁式地覆盖进去。
   })
 
+  //等图表创建完成再监听
+  ro = new ResizeObserver(resizeHandle)
+  ro.observe(chartEl.value!)
+
 })
 
 onUnmounted(()=>{
@@ -376,11 +378,16 @@ onUnmounted(()=>{
 })
 
 /* --- 滑块事件 --- */
-function onSliderChange(val:number){
+// function onSliderChange(val:number){
+//   if(val>=1 && val<=periods.length){
+//     inst.setOption(makeOption(val,map))
+//   }
+// }
+watch(idx,(val)=>{
   if(val>=1 && val<=periods.length){
     inst.setOption(makeOption(val,map))
   }
-}
+})
 
 </script>
 

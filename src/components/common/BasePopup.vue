@@ -121,6 +121,9 @@
 }
 .body{
   margin: 0.5rem;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  white-space: normal; /* 允许自动换行 */
 }
 .foot{
   display: flex;

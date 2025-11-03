@@ -170,11 +170,27 @@ function selectLayer(e: MouseEvent) {
 //mapId 对应到图片
 onMounted(()=>{
   const mapId = mapPersistence.getMapstyle()
-  if(Object.keys(mapboxPicUrl).includes(mapId)){
-    currentBG.value = mapboxPicUrl[mapId]
-  }else if(Object.keys(tilesetPicUrl).includes(mapId)){
-    currentBG.value = tilesetPicUrl[mapId]
+  //反查 mapbox
+  const mapIdx = mapboxStyle.findIndex(s => s.mapboxId === mapId)
+  if (mapIdx !== -1) {
+    activeMapboxIndex.value = mapIdx
+    activeTilesetIndex.value = null
+    currentBG.value = mapboxStyle[mapIdx].url
+  }else {
+    /* ------- 反查 tileset ------- */
+    const tileIdx = tileStyle.findIndex(s => s.tilesetId === mapId)
+    if (tileIdx !== -1) {
+      activeTilesetIndex.value = tileIdx
+      activeMapboxIndex.value = null
+      currentBG.value = tileStyle[tileIdx].url
+    }
   }
+
+  // if(Object.keys(mapboxPicUrl).includes(mapId)){
+  //   currentBG.value = mapboxPicUrl[mapId]
+  // }else if(Object.keys(tilesetPicUrl).includes(mapId)){
+  //   currentBG.value = tilesetPicUrl[mapId]
+  // }
 })
 
 </script>

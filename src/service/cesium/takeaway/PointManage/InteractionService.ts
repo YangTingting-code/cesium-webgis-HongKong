@@ -42,6 +42,7 @@ export class InteractionService {
   }
 
   private bindMoveWatcher() {
+    //需要像另外一个弹窗图钉那样聪明一点 不要直接用节流函数而是手动节流
     this.moveHandler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
     const throttled = throttle((pos: Cesium.Cartesian2) => {
       const picked = this.viewer.scene.pick(pos)

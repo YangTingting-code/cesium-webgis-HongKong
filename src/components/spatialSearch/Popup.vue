@@ -30,14 +30,11 @@ interface Props {
 // //默认宽高
 const {
   showRef,
-  title: propTitle,
-  id: propId,
+  title: propTitle ='默认标题',
+  id: propId = 'default-id',
   chartData,
   removeCircle,
-} = withDefaults(defineProps<Props>(),{
-  title: '默认标题',
-  id: 'default-id'
-})
+} = defineProps<Props>()
 
 const showRefRef = showRef as Ref<boolean> // 类型断言 为什么这样之后就可以修改类传过来的showref?
 const title = ref(propTitle)

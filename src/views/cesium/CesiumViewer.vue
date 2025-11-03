@@ -70,7 +70,6 @@ onUnmounted(()=>{
   //刷新之后销毁
   viewerRef.value?.destroy()
   regionPersistance.delRegion() //不用写把 标签页持久化
-
 })
 
 defineExpose({ viewerRef, tilesetRef});

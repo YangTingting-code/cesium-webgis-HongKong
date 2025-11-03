@@ -7,11 +7,7 @@ export class CircleMoveHandler {
   private ticking = false; // rAF 是否在跑
   private rafId: number | null = null; // 保存 rAF ID
 
-  /**
-   * 绑定鼠标移动事件
-   * @param viewer Cesium Viewer
-   * @param onMove 外部传入回调 (correctedPosition)
-   */
+
   bindMove(
     viewer: Cesium.Viewer,
     onMove: (corrected: Cesium.Cartesian2) => void

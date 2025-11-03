@@ -15,7 +15,7 @@ export function applyBaselayer(viewer: Cesium.Viewer, tileset: Cesium.Cesium3DTi
       modifyMap(viewer, true) //开启过滤
 
       tileset.customShader = tileShader
-      return
+      break
 
     case 'standard_satellite':
       layers.addImageryProvider(mapstyleDictionary[mapId] as Cesium.ImageryProvider)
@@ -24,13 +24,13 @@ export function applyBaselayer(viewer: Cesium.Viewer, tileset: Cesium.Cesium3DTi
 
       tileset.customShader = tileShader
 
-      return
+      break
 
     default:
       layers.addImageryProvider(mapstyleDictionary[mapId] as Cesium.ImageryProvider)
       tileset.customShader = createBuildingShaderGrouped(mapId as keyof typeof buildingShaderColorSchemeGrouped)
   }
-  if (isFilterActive() && mapId !== 'Cesium_Ion') { //如果当前处于滤镜状态并type不是tile类型的 需要移除并且重建globe
+  if (isFilterActive() && mapId !== 'standard_satellite') { //如果当前处于滤镜状态并type不是tile类型的 需要移除并且重建globe
     // modifyMap(viewer, false)
     forceReloadGlobe(viewer)
     modifyMap(viewer, false)

@@ -12,7 +12,6 @@ export const features = data.data.features
 //黑色掩膜
 const darkMask = [110, 10, 110, 30, 130, 30, 130, 10]
 
-
 export const extractRegionGeometries = (regionsArr: string[]) => {
   const allHoles: Cesium.PolygonHierarchy[] = []
   const cartographicArr = []
@@ -24,9 +23,6 @@ export const extractRegionGeometries = (regionsArr: string[]) => {
     const regionName = regionsArr[i]
     const idx = regions.indexOf(regionName)
     if (idx === -1) continue
-
-    // const arr = features[idx].geometry.coordinates[0][0]
-    // const maskpointArray = []; //maskpointArray = [lng1, lat1, lng2, lat2, lng3, lat3, ...];
 
     const rings = features[idx].geometry.coordinates[0]
 

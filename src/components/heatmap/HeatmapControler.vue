@@ -12,11 +12,11 @@
           <div class="selection">
             <!-- 可以用v-model做数据双向绑定 父子组件之间通信可以  -->
             <RegionSelector
-              v-model:heatmap-regions="heatmapRegions"
+              v-model:heatmap-regions="tempRegions"
               :clear-select="clearSelection"
             />
             <RampSelector
-              v-model:heatmap-gradient="heatmapGradient"
+              v-model:heatmap-gradient="tempGradient"
               v-model:clear-select="clearSelection"
               :save-ramp="saveRamp"
             />
@@ -160,12 +160,7 @@ interface FormType {
   date:any,
   regions:any
 }
-let form = reactive<FormType>({
-  radius:20,
-  blur:0.9,
-  maxOpacity:0.75,
-  minOpacity:0.15,
-  gradient:{
+const defaultGradient = {
     0: "rgba(0,0,0,0)",
     0.1: "rgba(59,86,165,1)",
     0.2: "rgba(69,117,180,1)",
@@ -177,16 +172,28 @@ let form = reactive<FormType>({
     0.8:"rgba(244,109,67,1)",
     0.9:"rgba(205,55,53,1)",
     1: "rgba(165,0,38,1)",
-  },
+  }
+let form = reactive<FormType>({
+  radius:20,
+  blur:0.9,
+  maxOpacity:0.75,
+  minOpacity:0.15,
+  gradient:defaultGradient,
   date:[Date,Date],
   regions:["九龙城区"]
 })
 onMounted(()=>{
   const local:FormType|{} = heatmapPersistence.getOption()
-  
+  const lastOption = heatmapPersistence.getLastOption()
+  const isHeatmap = heatmapPersistence.getIsHeatmap()
+
+  if(lastOption && Object.keys(lastOption).length && isHeatmap){
+    Object.assign(form,lastOption)
+    tempRegions.value = lastOption.regions
+    tempGradient.value = lastOption.gradient
+  }else 
   if(local && Object.keys(local).length){ //如果本地有数据 回显到表单
     Object.assign(form,local)//? assign什么意思？ 把两个对象做一个拼接 相同的做替换  没有的就新增
- 
   }else{
     //如果没有本地数据 初始化默认值并存储
     const today = new Date()
@@ -217,13 +224,12 @@ onMounted(()=>{
     save() //存入本地
   }
 })
+
 const props = defineProps<{glow:boolean,viewerRef:Cesium.Viewer}>()
 watch(()=>props.viewerRef,(newValue)=>{
   if(newValue) {
     
-    if(
-      heatmapPersistence.getIsHeatmap()
-    ) emitStartDraw() //状态为true才会把表单数据发送给父组件
+    if(heatmapPersistence.getIsHeatmap()) emitStartDraw() //状态为true才会把表单数据发送给父组件
   }
 })
 
@@ -231,6 +237,8 @@ watch(()=>props.viewerRef,(newValue)=>{
 const saveRamp = ref(false)
 
 const userSave = ()=>{
+  form.regions = tempRegions.value
+  form.gradient = tempGradient.value
   heatmapPersistence.saveOpion(form)
   saveRamp.value = true
   ElMessage({
@@ -251,18 +259,27 @@ const clear =()=>{
       type: 'success',
       offset:100
     })
+  tempRegions.value = ['九龙城区']
+  tempGradient.value = defaultGradient
 }
 
 const emits = defineEmits(['clearHeatmap','pause','play','startDraw'])
 
 //保存热力图选择的区域 点击开始绘制时才移动过去
 // let heatmapRegions :string[] 
-const heatmapRegions = ref<string[]>([])
-const heatmapGradient = ref<Record<string,string>>({})
+// const heatmapRegions = ref<string[]>([])
+// const heatmapGradient = ref<Record<string,string>>({})
 
+//临时保存用户“当前”在组件中选中的结果但尚未确认
+const tempRegions = ref<string[]>([])
+const tempGradient = ref<Record<string,string>>({})
 
 const emitStartDraw = ()=>{
-  if(!heatmapRegions.value || heatmapRegions.value.length < 1){
+  /* 1. 先同步临时值到 form */
+  form.regions = tempRegions.value
+  form.gradient = tempGradient.value
+
+  if(!tempRegions.value || tempRegions.value.length < 1){
       ElMessage({
       message: '绘制热力图前请选择行政区。',
       type: 'warning',
@@ -272,7 +289,7 @@ const emitStartDraw = ()=>{
   } 
 
   //需要选择色带
-  if(!heatmapGradient.value || Object.keys(heatmapGradient.value).length < 1
+  if(!tempGradient.value || Object.keys(tempGradient.value).length < 1
   ){
     // 警告
     ElMessage({
@@ -283,9 +300,8 @@ const emitStartDraw = ()=>{
     return 
   }
 
-
   //选择日期范围不能是同一天
-if(form.date && JSON.stringify(form.date[0]) === JSON.stringify(form.date[1])){
+if(form.date && form.date===0 && JSON.stringify(form.date[0]) === JSON.stringify(form.date[1])){
   // 警告
     ElMessage({
       message: '日期请不要选择同一天。',
@@ -294,10 +310,9 @@ if(form.date && JSON.stringify(form.date[0]) === JSON.stringify(form.date[1])){
     })
   return 
 }
-
   emits('startDraw',form)
   //更新区域
-  regionStore.updateRegion(heatmapRegions.value)
+  regionStore.updateRegion(tempRegions.value)
 
 }
 
@@ -305,6 +320,9 @@ const emitPause = ()=>{ //调整为子传父 emit 自定义事件？
    emits('pause')
 }
 const emitPlay = ()=>{ //调整为子传父 emit 自定义事件？
+  /* 继续绘制时也同样同步一次 */
+  form.regions = tempRegions.value
+  form.gradient = tempGradient.value
   emits('play',form)
 }
 
@@ -321,16 +339,12 @@ const emitToClear = ()=>{
   emits('clearHeatmap')
 }
 
-watch(heatmapRegions,(newValue)=>{
-  (form as any).regions = newValue
-})
-watch(heatmapGradient,(newValue)=>{
-  (form as any).gradient = newValue
-})
-
-// function toggleClear(){
-//   clearSelection.value = false
-// }
+// watch(heatmapRegions,(newValue)=>{
+//   (form as any).regions = newValue
+// })
+// watch(heatmapGradient,(newValue)=>{
+//   (form as any).gradient = newValue
+// })
 
 </script>
 
@@ -349,7 +363,7 @@ watch(heatmapGradient,(newValue)=>{
   pointer-events:none;
   padding: .3rem;
   &.open{ /* 滑入状态 */
-    transform: translateX(0); /* 刚好滑到可视区 */
+    transform: translateX(8%); /* 刚好滑到可视区 */
     opacity: 1;
     pointer-events: auto;
   }

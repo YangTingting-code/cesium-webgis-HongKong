@@ -22,9 +22,16 @@
             >
               <div class="start">
                 <span>取餐点：</span>
-                <div class="address">
-                  {{ value['取餐点'].name +"，"+ value['取餐点'].street +"，"+value['取餐点'].housenumber }}
-                </div>
+                <el-tooltip
+                  size="small"
+                  effect="dark"
+                  :content="value['取餐点'].name + '，' + value['取餐点'].street + '，' + value['取餐点'].housenumber"
+                  placement="top"
+                >
+                  <div class="address pointer">
+                    {{ value['取餐点'].name +"，"+ value['取餐点'].street +"，"+value['取餐点'].housenumber }}
+                  </div>
+                </el-tooltip>
               </div>
               <div class="end">
                 <span>送餐点：</span>
@@ -220,7 +227,6 @@ watch(currentSlotKey,async (newValue)=>{
 
   }
 
-
 })
 
 function startLater(timeoutMS = 5000){
@@ -315,6 +321,7 @@ onUnmounted(()=>{
 
 <style lang="scss" scoped>
 .wrapper{
+  user-select: none;
   width: 100%;
   height: 100%;
   padding: 0.5rem;
@@ -392,7 +399,6 @@ onUnmounted(()=>{
         }
       
         .content{
-          pointer-events: none;
           width: 82%;
           font-size: 10px;
           border-radius: 4px;
@@ -400,7 +406,8 @@ onUnmounted(()=>{
           margin-left: 5px;
           height: 90%;
           &::after {
-          content: "";
+            z-index: -1;
+            content: "";
             position: absolute;
             top: 0;
             right: -3px; /* 稍微延伸一点，覆盖边界 */
@@ -467,6 +474,29 @@ onUnmounted(()=>{
             background: linear-gradient(90deg, transparent, rgba(4, 72, 140, 0.9), transparent);
 
           }
+          .address{
+            &.pointer{
+              /* 确保地址区域可以触发悬停 */
+              cursor: pointer;
+              width: 100%; /* 占满剩余空间 */
+            }
+            
+            
+            /* 悬停效果 */
+            transition: all 0.3s ease;
+            /* 多行截断 */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+  
+            line-clamp: 2;
+            box-orient:vertical;
+
+            max-height: 3em; //最大高度是字体大小的三倍
+            line-height: 1.5;//行高是字体大小的1.5倍
+          }
 
         }
         
@@ -506,11 +536,11 @@ onUnmounted(()=>{
           /* 已完成 */
           &.status-finished {
             background: linear-gradient(180deg,
-              rgba(255, 154, 189, 0.8),
-              rgba(250, 77, 195, 0.682));
+              rgba(57, 241, 0, 0.822),
+              rgba(8, 201, 15, 0.8));
             box-shadow:
-              0 0 12px rgba(254, 157, 231, 0.8),
-              inset 0 0 4px rgba(240, 1, 125, 0.9);
+              0 0 12px rgba(48, 252, 2, 0.8),
+              inset 0 0 4px rgba(7, 79, 48, 0.9);
             animation: glowFinished 3s ease-in-out infinite alternate;
           }
 

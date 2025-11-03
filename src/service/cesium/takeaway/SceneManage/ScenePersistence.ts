@@ -55,6 +55,8 @@ export const ScenePersistence = {
     return read('lastElapsed')
   },
   setLastElapsed(val: Json) {
+    //打补丁 当前是绘制路径状态下才可以保存骑手运动时间
+    if (!this.getIsPath()) return
     val = Math.max(0, val - 20) //减去20ms 回显的时候可以继续走一段
     write('lastElapsed', val)
   },

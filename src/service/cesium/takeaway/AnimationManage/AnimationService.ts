@@ -1,6 +1,5 @@
 import * as Cesium from 'cesium'
 import type { CombinedOrder, DeliveryOrder, SegmentType } from '@/interface/takeaway/interface'
-// import { useBucketStore } from '../store/bucketStore'
 import { ClockController } from '@/service/cesium/takeaway/AnimationManage/ClockController'
 import { OrderTracker } from '@/service/cesium/takeaway/AnimationManage/OrderTracker'
 import { PathTracker } from '@/service/cesium/takeaway/AnimationManage/PathTracker'

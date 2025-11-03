@@ -6,8 +6,9 @@
     :class="{ open: sidebarOpen }"
     @mouseenter="isBtnHover = true"
     @mouseleave="isBtnHover = false"
-    @click="sidebarOpen = !sidebarOpen"
+    @click.stop="sidebarOpen = !sidebarOpen"
   >
+  <!-- @click="sidebarOpen = !sidebarOpen" -->
     <span>{{ sidebarOpen ? '关闭' : '查看周边' }}</span>
   </div>
   <div 
@@ -27,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import CircleControlPanel from '@/components/spatialSearch/CircleControlPanel.vue'
+  import CircleControlPanel from '@/components/spatialSearch/CircleControlPanel.vue'
   import { ref,inject ,type Ref} from 'vue'
   import * as Cesium from 'cesium';
   import {useCircleSearch} from '@/composables/cesium/spatialSearch/useCircleSearch'
@@ -35,14 +36,14 @@ import CircleControlPanel from '@/components/spatialSearch/CircleControlPanel.vu
   const sidebarOpen = ref(false) //鼠标点击了按钮之后 这个会变成true 然后sidebar 多一个open类
   const isBtnHover = ref(false) //当鼠标在关闭按钮的时候 控制面板也会跟着放大发光
 
-    interface CesiumInjection {
-      viewerRef:Ref<Cesium.Viewer|undefined>,
-      tilesetRef:Ref<Cesium.Cesium3DTileset|undefined>,
-      isReady:Ref<boolean>
-    }
-    const {viewerRef,tilesetRef,isReady} = inject<CesiumInjection>('cesium')!
-  
-      const res = useCircleSearch(viewerRef, tilesetRef)
+  interface CesiumInjection {
+    viewerRef:Ref<Cesium.Viewer|undefined>,
+    tilesetRef:Ref<Cesium.Cesium3DTileset|undefined>,
+    isReady:Ref<boolean>
+  }
+  const {viewerRef,tilesetRef,isReady} = inject<CesiumInjection>('cesium')!
+
+  const res = useCircleSearch(viewerRef, tilesetRef)
 
 const { radius, isStartDisabled,isStopDisabled, showControl, startSearch, stopSearch } = res
 
@@ -61,6 +62,8 @@ function onStart() {
 function onStop(){
   stopSearch()
 }
+
+
 </script>
 
 <style scoped lang="scss">

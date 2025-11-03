@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import { ElMessage } from 'element-plus'
 // ---------------- OverpassClient ----------------
 export class OverpassClient {
   async fetch(lng: number, lat: number, radius: number): Promise<any> {
@@ -19,6 +19,11 @@ export class OverpassClient {
       );
       return res.data;
     } catch (err) {
+      ElMessage({
+        message: '请求建筑数据失败，可以删除弹窗再试一次',
+        type: 'error',
+      })
+      ElMessage.closeAll()
       console.dir('向Overpass API获取数据失败', err);
       throw err;
     }

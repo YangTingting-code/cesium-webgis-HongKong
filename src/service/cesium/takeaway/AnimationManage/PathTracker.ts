@@ -11,7 +11,7 @@ export class PathTracker {
   // private isDataReload: boolean = false
   private cumD: number = 0
 
-  private bucketStore = useBucketStore()
+  // private bucketStore = useBucketStore()
 
   constructor(pathService: PathService) {
     this.pathService = pathService
@@ -35,7 +35,7 @@ export class PathTracker {
 
     if (buckets) {
       this.pathService.applySegmentBuckets(buckets)
-      this.bucketStore.updateBuckets(buckets)
+      // this.bucketStore.updateBuckets(buckets)
 
       if (buckets.currentSegs?.length) {
         if (buckets.currentSegs.length > 0)

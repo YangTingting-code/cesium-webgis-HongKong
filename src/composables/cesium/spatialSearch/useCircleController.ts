@@ -40,6 +40,8 @@ export function useCircleController(viewerRef: Ref<Viewer | undefined>, tilesetR
 
   onMounted(() => {
     viewerContainer = document.getElementById('cesiumContainer')!;
+    // const useCursorPick()
+
   });
 
   // 防抖处理
@@ -59,7 +61,7 @@ export function useCircleController(viewerRef: Ref<Viewer | undefined>, tilesetR
 
   watch(radius, debounceWatch)
 
-  function enableInteraction() {
+  async function enableInteraction() {
     if (!viewerRef.value) return
     /* bind handlers */
     circleCtrl.moveHandler.bindMove(
@@ -67,12 +69,14 @@ export function useCircleController(viewerRef: Ref<Viewer | undefined>, tilesetR
       (correctedPosition: Cartesian2) => { //传入一个函数 内部用requestAnimationFrame控制每一帧触发 而不是鼠标移动触发 减轻高频
         startCursorCheck(correctedPosition);
       }
-    );
+    )
+
     circleCtrl.clickHandler.bind(
       viewerRef.value,
       async (lng, lat, h, correctedPosition) => {
         if (!viewerRef.value) return
         if (clickPick(correctedPosition)) return; //如果拾取到图钉图标就直接返回 控制弹窗的显示和隐藏
+
         index = circleCtrl.dataMgr.maxId(); //得到此时的最大id，准备index用于创建实例
         const pointEntityId = 'pointEntity-' + index;
         const pinEntityId = 'pinEntity-' + index;
@@ -120,6 +124,7 @@ export function useCircleController(viewerRef: Ref<Viewer | undefined>, tilesetR
       }
     )
   }
+
   function disableInteraction() {
     /* unbind */
     circleCtrl.clickHandler.unbind(); //移除屏幕监听
@@ -171,12 +176,6 @@ export function useCircleController(viewerRef: Ref<Viewer | undefined>, tilesetR
     // 如果有缓存数据（刷新场景）
     if (hasData) { //如果搜索圈和弹窗回显了 进入这里 继续回显照相机 
       //相机 本地有数据才恢复成上一次刷新前照相机的位置
-      // const { destination, orientation } = JSON.parse(
-      //   sessionStorage.getItem('cameraBeforeReload') || '{}'
-      // )
-
-      // if (destination) setCameraPosition(viewer, destination, orientation)
-
       enableInteraction()
       // startListen(); //此时应当保持屏幕监听事件
       isListen.value = true; //此时开始监听屏幕点击事件
@@ -272,7 +271,11 @@ export function useCircleController(viewerRef: Ref<Viewer | undefined>, tilesetR
       checking = true;
       loop();
     }
+
   }
+
+  const PICK_INTERVAL = 80; // 每 80ms 执行一次 pick
+  let lastPickTime = 0;
 
   function loop() {
     if (!checking) return;
@@ -283,8 +286,16 @@ export function useCircleController(viewerRef: Ref<Viewer | undefined>, tilesetR
         lastX = x;
         lastY = y;
         if (!viewerRef.value) return
+
+        // 控制 pick 的执行频率
+        const now = performance.now();
+        if (now - lastPickTime < PICK_INTERVAL) return; // 距离上次 pick 太近就跳过
+        lastPickTime = now;
+
         const picked = viewerRef.value.scene.pick(currentPos);
         const hitPin = picked?.id?._id?.includes('pinEntity') ?? false;
+        console.log('hitPin', hitPin)
+        console.log('picked', picked)
 
         if (hitPin) {
           const popup = circleCtrl.renderer.popupInstances[picked.id._id];
@@ -294,10 +305,16 @@ export function useCircleController(viewerRef: Ref<Viewer | undefined>, tilesetR
           }
         }
 
+        console.log('lastCursorOnPin !== hitPin', lastCursorOnPin !== hitPin)
+        console.log('lastCursorOnPin', lastCursorOnPin)
+
         if (hitPin !== lastCursorOnPin) {
           lastCursorOnPin = hitPin;
-          if (viewerContainer)
+          if (viewerContainer) {
+            debugger
             viewerContainer.style.cursor = hitPin ? 'pointer' : 'default';
+
+          }
         }
       }
     }

@@ -5,7 +5,7 @@
     class="toggle-btn" 
     @mouseenter="isBtnHover = true"
     @mouseleave="isBtnHover = false"
-    @click.stop="sidebarOpen=!sidebarOpen"
+    @click.stop="sidebarOpen = !sidebarOpen"
   >
     <span> {{ sidebarOpen ? '关闭':'热力图' }} </span>
   </div>
@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted,inject,type Ref,ref} from 'vue';
+import { onMounted, onUnmounted,inject,type Ref,ref,toRaw} from 'vue';
 import { flowWeek } from '@/service/cesium/heatmap/FlowWeek';
 import { loadData } from '@/data/heatmap/loadData';
 import {updateHeatmapData } from '@/service/cesium/heatmap/heatmapCesiumES6';
@@ -31,7 +31,7 @@ import * as Cesium from 'cesium';
 import heatmapControler from '@/components/heatmap/HeatmapControler.vue'
 import type { HeatSnapWithoutId } from '@/interface/heatmap/interface';
 import {saveCameraPos,setCameraPosition,removeCameraListener,position2bbox} from '@/utils/aboutCamera' 
-
+import {useSceneStore} from '@/store/takeaway/sceneStore'
 import {
   CesiumHeatmap,
   type HeatmapPoint,
@@ -53,6 +53,7 @@ interface FormType {
   date:any,
   regions:any
 }
+
 const sidebarOpen = ref(false) //控制面板的出现和关闭
 const isBtnHover = ref(false) //鼠标在btn上面的时候 控制面板会发光
 const keys: (keyof FormType)[] = ['radius', 'blur', 'maxOpacity', 'minOpacity',"gradient","regions"];
@@ -75,9 +76,17 @@ const isRegisterCamera = ref(false)
 
 //接收表单数据 并且把string转换成number，把起止时间转换成JulianDate格式的，下一步就是查找本地数据有没有 没有的话就重新计算
 const handleForm = (value:FormType)=>{
-  keys.forEach((key)=>{
-    heatmapOption[key] = value[key]
-  })
+  heatmapOption = toRaw(value) as any
+
+  // keys.forEach((key)=>{
+  //   heatmapOption[key] = value[key]
+  // })
+
+  // console.log('value',value)
+  // console.log('heatmapOption',heatmapOption)
+  // console.log('value["date"]',value["date"])
+  // console.log('value["date"][0]',value["date"][0])
+  // debugger
   let iso1
   let iso2
   if(typeof value["date"][0] !== "string"){ //说明是用户手动选择了数字 不是用本地回显回去的
@@ -90,7 +99,6 @@ const handleForm = (value:FormType)=>{
     iso2 = value["date"][1]
   }
 
-
   const startTime = Cesium.JulianDate.fromIso8601(iso1)
   const stopTime = Cesium.JulianDate.fromIso8601(iso2)
   return {
@@ -102,12 +110,21 @@ const handleForm = (value:FormType)=>{
 const save = (value:FormType)=>{
   heatmapPersistence.setLastOption(value)
 }
+
 const drawHeatmap = async (value:FormType, forceRedraw=false)=>{
   if(!viewerRef.value) return
+
   const {heatmapOption,startTime,stopTime} =handleForm(value)
+
   lastOption = heatmapPersistence.getLastOption()
+
   const clock = viewerRef.value.clock 
+
   //判断是否需要重绘
+  console.log('lastOption 会话',lastOption)
+  console.log('heatmapOption',heatmapOption)
+  debugger
+
   const needRedraw = forceRedraw ||
     JSON.stringify(clock.startTime.clone()) !== JSON.stringify(startTime) ||
     JSON.stringify(clock.stopTime.clone()) !== JSON.stringify(stopTime) ||
@@ -118,16 +135,28 @@ const drawHeatmap = async (value:FormType, forceRedraw=false)=>{
     await initTime(heatmapOption,startTime,stopTime,
     heatmapPersistence.getIsHeatmap()
   )
+   // 只有在真正重绘后才更新 lastOption
+    save(heatmapOption as any)
   }else{ //不用重绘 直接打开时间播放 有bug 有可能是刷新之后不用重绘制 此时是否播放动画需要根据刷新前的状态来决定
     clock.shouldAnimate = true 
   }
 }
+
+//管理订单面板状态
+const sceneStore = useSceneStore()
+
 const startDraw = async (value:FormType)=>{
+  //取消订单面板轮询 防止轮询干扰热力图时间播放
+  sceneStore.stopPolling()
+  // 清除 订单面板的延时器（startLater）
+  sceneStore.clearTimeout()
+
   // ===== 将当前绘制的区域更新到本地 ===== 还有什么时候会更新 点击继续绘制的时候
   heatmapPersistence.setHeatmapRegions(value.regions)
 // ==========================================
   sidebarOpen.value = false
-  save(value) //保存数据到本地
+
+  // save(value) //保存数据到本地
   const heatmapVisited = heatmapPersistence.getIsHeatmap()
   await drawHeatmap(value,!heatmapVisited) //只有第一次绘制热力图的时候才需要重绘 heatmapVisited是热力图是否第一次绘制的标志
   saveCameraPos(viewerRef.value,isRegisterCamera) //开始相机监听 刷新之后表单数据回显 把表单数据提交给父组件 触发startDraw 此时不会再次监听照相机 因为isRegisterCamera是true
@@ -144,13 +173,14 @@ const play = async (value:FormType)=>{ //暂停热力图的绘制
   // ===== 将当前绘制的区域更新到本地 ===== 在点击“开始绘制”或者“继续绘制”的时候把当前热力图区域存储到本地
   heatmapPersistence.setHeatmapRegions(value.regions)
   // ==========================================
-  save(value) //保存配置
+  // save(value) //保存配置
   sidebarOpen.value = false
   await drawHeatmap(value,false) //判断参数是否发生变化 不强制重绘
 }
 const clearHeatmap = ()=>{ //清除热力图
   if(!heatLayer) return //如果根本没有热力图实例就直接返回
   heatLayer.remove() //移除热力图实例
+
   viewerRef.value.clock.shouldAnimate = false
   //恢复初始状态 清除监听 下次可以再次绘制热力图
   if(tickRemoved){
@@ -225,7 +255,9 @@ async function initTime(heatmapOptions:any,startTime:Cesium.JulianDate,endTime:C
   }
   //这个只是浅拷贝 要做深拷贝！
   // lastOption = toRaw(heatmapOption) //保存当前的heatmapOption 下次有改变就重新绘制 
-  heatmapPersistence.setLastOption(heatmapOptions)
+  // debugger
+  // save(heatmapOptions)
+  // heatmapPersistence.setLastOption(heatmapOptions)
   
   initClock(startTime,endTime)
   // 2. 注册并保存移除句柄
@@ -269,6 +301,7 @@ async function initTime(heatmapOptions:any,startTime:Cesium.JulianDate,endTime:C
             
           }else{ 
             updateHeatmapData(heatLayer, points, globalMax,globalMin);
+
           }
       }
     } finally {
@@ -299,14 +332,16 @@ onUnmounted(() => {
     tickRemoved();
     tickRemoved = null
   }
-});
+})
+
+
 
 </script>
 
 <style scoped lang="scss">
 .toggle-btn{
   position: absolute;
-  top: 9rem;
+  top: 11rem;
   left: 0;
   width: 2.5rem;
   height: 6rem;
@@ -328,7 +363,7 @@ onUnmounted(() => {
     transform: translateX(0.5rem) scale(1.1);
   }
   &.open{
-    left: 29rem; /* 跟随侧边栏宽度 */
+    left: 31.5rem; /* 跟随侧边栏宽度 */
     width: 2rem;
     height: 5rem;
     font-size: 0.8rem;

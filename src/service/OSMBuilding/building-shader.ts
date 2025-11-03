@@ -42,7 +42,7 @@ export const glowShader =
       },
       u_heightRange: {
         type: Cesium.UniformType.FLOAT,
-        value: 300.0,
+        value: 220.0,
       },
     },
 

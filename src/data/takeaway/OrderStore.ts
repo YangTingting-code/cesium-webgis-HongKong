@@ -33,8 +33,6 @@ export class OrderStore {
   }
 
 
-
-
   // 保存单条订单
   async saveOrder(order: DeliveryOrder) {
     await this.store.setItem(order.riderId, order)

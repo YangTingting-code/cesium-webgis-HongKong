@@ -6,7 +6,7 @@
       :class="{open:sidebarOpen}"
       @mouseenter="isBtnHover = true"
       @mouseleave="isBtnHover = false"
-      @click="sidebarOpen = !sidebarOpen"
+      @click.stop="sidebarOpen = !sidebarOpen"
     >
       <span>{{ sidebarOpen ? '关闭' : '查看骑手轨迹' }}</span>
     </div>
@@ -72,20 +72,20 @@
           </el-button>
         </div>
         
-        <div
+        <!-- <div
           v-if="animationState"
           class="progress-info"
         >
           进度: {{ (animationState.currentProgress * 100).toFixed(1) }}%
-          <!-- 时间: {{ animationState.elapsedTime.toFixed(1) }}s / {{ animationState.totalDuration }}s -->
-        </div>
+          时间: {{ animationState.elapsedTime.toFixed(1) }}s / {{ animationState.totalDuration }}s
+        </div> -->
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, inject, watch } from 'vue'
+import { ref,  inject, watch } from 'vue'
 import type { Ref } from 'vue'
 import {SceneStateManager} from '@/service/cesium/takeaway/SceneManage/SceneStateManager'
 import {useSceneStore} from '../../../../store/takeaway/sceneStore'
@@ -107,6 +107,7 @@ let sceneStateManager : SceneStateManager
 let clockController : ClockController
 
 let isFollow = false
+
 //管理订单面板状态
 const sceneStore = useSceneStore()
 
@@ -135,8 +136,9 @@ async function initializeServices(viewer: Cesium.Viewer) {
   sceneStore.setPollingFns(res.startPolling,res.stopPolling)
 
   //开启轮询
-  // 当前isPath为false时
-  if(!ScenePersistence.getIsPath()){
+  // 当前isPath为false时 并且 热力图没有在绘制时候开始轮询
+  const isHeatmap = JSON.parse(sessionStorage.getItem('heatmapVisited')||'false')
+  if(!ScenePersistence.getIsPath() && !isHeatmap){
     res.startPolling()
   }
 }
@@ -248,6 +250,7 @@ const updateAnimationState = () => {
 }
 
 const serviceClear = ()=>{
+
   //-----先把时钟恢复成东八区当前时间
   const {animationService} = sceneStateManager.getServices()
   if(!animationService){
@@ -279,13 +282,6 @@ watch(
   )
 
 
-// 定期更新状态
-onMounted(() => {
-  
-  // if(sceneStateManager)
-  //   setInterval(updateAnimationState, 100)
-})
-
 // 组件卸载时清理资源
 import { onUnmounted } from 'vue'
 onUnmounted(() => {
@@ -293,6 +289,7 @@ onUnmounted(() => {
   //停止轮询
   sceneStore.stopPolling()
 })
+
 
 </script>
 
@@ -303,7 +300,7 @@ onUnmounted(() => {
   writing-mode: vertical-rl;
   width: 2.5rem;
   height: 9rem;
-  top: 17rem;
+  top: 20rem;
   left: 0;
   display: flex;
   align-items: center;
@@ -337,7 +334,7 @@ onUnmounted(() => {
 
     position: relative;
     left:-104%;
-    top: 16.5rem;
+    top: 19rem;
     width: 24rem;
     height: 7rem;
     opacity: 0;
@@ -372,42 +369,42 @@ onUnmounted(() => {
   position: relative;
 }
 
-.animation-controls {
-  position: absolute;
-  top: 60px;
-  left: 10px;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 10px;
-  border-radius: 5px;
-  z-index: 1000;
+// .animation-controls {
+//   position: absolute;
+//   top: 60px;
+//   left: 10px;
+//   background: rgba(0, 0, 0, 0.7);
+//   padding: 10px;
+//   border-radius: 5px;
+//   z-index: 1000;
   
-  button {
-    margin: 2px;
-    padding: 5px 10px;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
+//   button {
+//     margin: 2px;
+//     padding: 5px 10px;
+//     background: #4CAF50;
+//     color: white;
+//     border: none;
+//     border-radius: 3px;
+//     cursor: pointer;
     
-    &:hover {
-      background: #45a049;
-    }
-  }
+//     &:hover {
+//       background: #45a049;
+//     }
+//   }
   
-  .speed-control {
-    margin-top: 10px;
-    color: white;
+//   .speed-control {
+//     margin-top: 10px;
+//     color: white;
     
-    label {
-      margin-right: 5px;
-    }
-  }
+//     label {
+//       margin-right: 5px;
+//     }
+//   }
   
-  .progress-info {
-    margin-top: 10px;
-    color: white;
-    font-size: 14px;
-  }
-}
+//   .progress-info {
+//     margin-top: 10px;
+//     color: white;
+//     font-size: 14px;
+//   }
+// }
 </style>

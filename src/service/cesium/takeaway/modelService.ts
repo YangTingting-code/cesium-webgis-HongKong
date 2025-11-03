@@ -162,6 +162,7 @@ export class ModelService {
     getPosition: () => Cesium.Cartesian3,
     getOrientation: () => Cesium.Quaternion
   ) {
+    console.log('进来了')
     const modelPos = getPosition() //得到模型C3位置
     const modelQuat = getOrientation()  //得到模型当前的朝向
 

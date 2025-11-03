@@ -77,6 +77,7 @@ export const heatmapPersistence = {
     return read('lastOption')
   },
   setLastOption(val: Json) {
+
     write('lastOption', val)
   },
 

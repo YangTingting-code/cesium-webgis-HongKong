@@ -68,6 +68,8 @@
             </div>
             <div class="map-box">
               <cesium />
+               <!-- <div style="color:white; font-size: 20px;">Cesium组件测试显示</div> -->
+
             </div>
             <div class="right-box">
               <dv-border-box-12> 
@@ -105,7 +107,7 @@ provide('getViewer',(viewer:Viewer)=>{
 provide('viewerInstance',viewerInstance)
 
 
-const loading = ref(true);
+const loading = ref(false);
 
 // rem.ts
 function setRem() {
@@ -124,7 +126,7 @@ const cancelLoading = () => {
 };
 
 onMounted(() => {
-  cancelLoading(); 
+  // cancelLoading(); 
   window.addEventListener('resize', setRem);
   setRem();
 });
@@ -139,3 +141,5 @@ onBeforeUnmount(() => {
 <style lang="scss" scoped>
 @import url('../assets/scss/index.scss');
 </style>
+
+

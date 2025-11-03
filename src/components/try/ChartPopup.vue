@@ -3,7 +3,7 @@
   <BasePopup
     :popup-id="id"
     :title="title"
-    :show-ref="showRef"
+    :show-ref="showRefRef"
   >
     <div class="chart">
       <rose-chart :series-data="chartData" />
@@ -30,6 +30,8 @@ interface Props {
 }
 
 const { id, title, showRef, chartData, removeCircle } = defineProps<Props>();
+const showRefRef = showRef as Ref<boolean> // 类型断言 为什么这样之后就可以修改类传过来的showref?
+
 </script>
 
 <style lang="scss" scoped>
