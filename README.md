@@ -13,11 +13,11 @@
 7.场景管理与还原：摄像机位置、路径状态恢复
 
 技术栈
-前端框架：Vue 3 (Composition API)
-地图引擎：CesiumJS
-可视化库：ECharts, DataV,Element Plus
-类型支持：TypeScript
-状态管理：Pinia
-构建工具：Vite
-数据存储：IndexedDB\localStorage\sessionStorage
-地理计算：Turf.js
+①前端框架：Vue 3
+②地图引擎：CesiumJS,MapboxGL
+③可视化库：ECharts, DataV,Element Plus
+④类型支持：TypeScript
+⑤状态管理：Pinia
+⑥构建工具：Vite
+⑦数据存储：IndexedDB\localStorage\sessionStorage
+⑧地理计算：Turf.js
