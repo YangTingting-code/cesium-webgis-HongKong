@@ -14,34 +14,39 @@ const darkMask = [110, 10, 110, 30, 130, 30, 130, 10]
 
 export const extractRegionGeometries = (regionsArr: string[]) => {
   const allHoles: Cesium.PolygonHierarchy[] = []
-  const cartographicArr = []
+  const cartographicArr: Cesium.Cartographic[][][] = []
   const lngsArr: number[] = []
   const latsArr: number[] = []
 
   //遍历所有行政区，收集洞+经纬度
   for (let i = 0; i < regionsArr.length; i++) {
+    cartographicArr.push([]) //一个行政区用一个数组包裹
     const regionName = regionsArr[i]
     const idx = regions.indexOf(regionName)
     if (idx === -1) continue
 
-    const rings = features[idx].geometry.coordinates[0]
+    const ringsArr = features[idx].geometry.coordinates
 
-    const holesHierarchy = ringsToHoles(rings)
-
-    allHoles.push(...holesHierarchy)
-
-    //bbox 完整范围 把所有点的push进去
-    const cartographic: Cesium.Cartographic[] = [];
-    rings.forEach((ring: number[][]) => {
-      ring.forEach((p: number[]) => {
-        const [lng, lat] = coordtransform.gcj02towgs84(p[0], p[1])
-        lngsArr.push(lng)
-        latsArr.push(lat)
-
-        cartographic.push(Cesium.Cartographic.fromDegrees(lng, lat))
-      })
+    const holesHierarchy: Cesium.PolygonHierarchy[][] = ringsToHoles(ringsArr)
+    holesHierarchy.forEach((h: Cesium.PolygonHierarchy[]) => {
+      allHoles.push(...h)
     })
-    cartographicArr.push(cartographic)
+
+    ringsArr.forEach((rings: number[][]) => {
+      const cartographic: Cesium.Cartographic[] = [] //内部循环每次都初始化
+      rings.forEach(ring => {
+        ring.forEach((p: any) => {
+          const [lng, lat] = coordtransform.gcj02towgs84(p[0], p[1])
+          lngsArr.push(lng)
+          latsArr.push(lat)
+
+          cartographic.push(Cesium.Cartographic.fromDegrees(lng, lat))
+        })
+
+      })
+      cartographicArr[i].push(cartographic)
+
+    })
   }
 
   const unifiedArea = new Cesium.Entity({
@@ -66,14 +71,16 @@ export const extractRegionGeometries = (regionsArr: string[]) => {
   ...
 ] */
 
-function ringsToHoles(coords: number[][][]): Cesium.PolygonHierarchy[] { //
-  return coords.map(ring => {
-    const wgs = ring.map(p => {
-      return coordtransform.gcj02towgs84(p[0], p[1])
+function ringsToHoles(polygon: number[][][]): Cesium.PolygonHierarchy[][] { //
+  return polygon.map(coords => {
+    return coords.map(ring => {
+      const wgs = ring.map(p => {
+        return coordtransform.gcj02towgs84(p[0], p[1])
+      })
+      return new Cesium.PolygonHierarchy(
+        Cesium.Cartesian3.fromDegreesArray(wgs.flat())
+      )
     })
-    return new Cesium.PolygonHierarchy(
-      Cesium.Cartesian3.fromDegreesArray(wgs.flat())
-    )
   })
 }
 
@@ -110,49 +117,43 @@ export const line3D = new Cesium.Entity({
 
 
 export async function createLine3D(
-  cartographic: Cesium.Cartographic[],
+  cartographic: Cesium.Cartographic[][],
   region: string,
   offsetH = 0
 ) {
   //3.采样地形
-  // const terrProvider = terrainProvider
-  // await Cesium.createWorldTerrainAsync();
-  const positionWithTerrian = await Cesium.sampleTerrainMostDetailed(
-    terrainProvider,
-    cartographic
-  );
+  const line3DArr = []
+  for (let i = 0; i < cartographic.length; i++) {
+    const positionWithTerrian = await Cesium.sampleTerrainMostDetailed(
+      terrainProvider,
+      cartographic[i]
+    )
+    //4.转换成空间直角坐标系
+    const maskpoint = positionWithTerrian.map((p) =>
+      Cesium.Cartesian3.fromRadians(p.longitude, p.latitude, p.height + offsetH)
+    )
+    //5.矩形截面
+    const rectangleShape = [
+      //x,y 二维形状
+      new Cesium.Cartesian2(-2.0, -20.0),
+      new Cesium.Cartesian2(2.0, -20.0),
+      new Cesium.Cartesian2(2.0, 20.0),
+      new Cesium.Cartesian2(-2.0, 20.0),
+    ]
 
-  //4.转换成空间直角坐标系
-  const maskpoint = positionWithTerrian.map((p) =>
-    Cesium.Cartesian3.fromRadians(p.longitude, p.latitude, p.height + offsetH)
-  );
+    //6.添加立体线
+    const line3D = new Cesium.Entity({
+      id: `${region}-line3D-${i}`,
+      polylineVolume: {
+        positions: maskpoint,
+        shape: rectangleShape,
+        material: Cesium.Color.fromCssColorString('#6dcdeb').withAlpha(0.5),
+      },
+    })
+    line3DArr.push(line3D)
+  }
 
-  //5.矩形截面
-  const rectangleShape = [
-    //x,y 二维形状
-    new Cesium.Cartesian2(-2.0, -20.0),
-    new Cesium.Cartesian2(2.0, -20.0),
-    new Cesium.Cartesian2(2.0, 20.0),
-    new Cesium.Cartesian2(-2.0, 20.0),
-  ]
-
-  //6.添加立体线
-  const line3D = new Cesium.Entity({
-    id: `${region}-line3D`,
-    polylineVolume: {
-      positions: maskpoint,
-      shape: rectangleShape,
-      material: Cesium.Color.fromCssColorString('#6dcdeb').withAlpha(0.5),
-      //下面是网格样式
-      /* new Cesium.GridMaterialProperty({
-        color: Cesium.Color.YELLOW,
-        cellAlpha: 0.2,
-        lineCount: new Cesium.Cartesian2(8, 8),
-        lineThickness: new Cesium.Cartesian2(2.0, 2.0)
-      }) */
-    },
-  });
-  return line3D;
+  return line3DArr;
 }
 
 //行政区面域的块状物体

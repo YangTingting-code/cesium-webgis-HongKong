@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { NodePoint, DeliveryOrder, CombinedOrder, MatrixNode, Milestone } from '../interface';
+import type { NodePoint, DeliveryOrder, CombinedOrder, MatrixNode, Milestone } from '@/interface/takeaway/interface';
 import coordtransform from 'coordtransform'
 import * as turf from '@turf/turf'
 

@@ -129,6 +129,9 @@ export function useCircleController(viewerRef: Ref<Viewer | undefined>, tilesetR
     /* unbind */
     circleCtrl.clickHandler.unbind(); //移除屏幕监听
     circleCtrl.moveHandler.unbind(); //移除屏幕监听
+
+    //移除鼠标移动监听
+    checking = false
   }
   function clearAll() {
     disableInteraction()
@@ -294,8 +297,6 @@ export function useCircleController(viewerRef: Ref<Viewer | undefined>, tilesetR
 
         const picked = viewerRef.value.scene.pick(currentPos);
         const hitPin = picked?.id?._id?.includes('pinEntity') ?? false;
-        console.log('hitPin', hitPin)
-        console.log('picked', picked)
 
         if (hitPin) {
           const popup = circleCtrl.renderer.popupInstances[picked.id._id];
@@ -305,13 +306,9 @@ export function useCircleController(viewerRef: Ref<Viewer | undefined>, tilesetR
           }
         }
 
-        console.log('lastCursorOnPin !== hitPin', lastCursorOnPin !== hitPin)
-        console.log('lastCursorOnPin', lastCursorOnPin)
-
         if (hitPin !== lastCursorOnPin) {
           lastCursorOnPin = hitPin;
           if (viewerContainer) {
-            debugger
             viewerContainer.style.cursor = hitPin ? 'pointer' : 'default';
 
           }

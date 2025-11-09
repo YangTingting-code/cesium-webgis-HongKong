@@ -7,7 +7,7 @@ import * as Cesium from 'cesium'
 import { setCameraPosition } from '@/utils/aboutCamera'
 
 //改造成可以绘制多个的 ? 主要是视图那里要调整 多个区域的bbox
-export async function makeRegionPoly(viewer: Cesium.Viewer, regions: string[] | string, isFly: boolean) {
+export async function makeRegionPoly(viewer: Cesium.Viewer, regions: string[] | string, isFly: boolean, strict?: boolean) {
 
   const regionsArr = Array.isArray(regions) ? regions : [regions]
 
@@ -17,11 +17,12 @@ export async function makeRegionPoly(viewer: Cesium.Viewer, regions: string[] | 
   viewer.entities.add(unifiedArea)
 
   for (let i = 0; i < regionsArr.length; i++) {
-    // //绘制三维边界线
+    //绘制三维边界线
     const regionName = regionsArr[i]
-
-    const line3D = await createLine3D(cartographicArr[i], regionName)
-    viewer.entities.add(line3D)
+    const line3DArr = await createLine3D(cartographicArr[i], regionName)
+    for (let j = 0; j < line3DArr.length; j++) {
+      viewer.entities.add(line3DArr[j])
+    }
   }
 
   //自动调整视角
@@ -31,7 +32,7 @@ export async function makeRegionPoly(viewer: Cesium.Viewer, regions: string[] | 
   const { west, south, east, north } = bounds
 
   const dist = JSON.parse(sessionStorage.getItem('cameraBeforeReload') || "{}")
-  if (Object.keys(dist).length > 0) {
+  if (Object.keys(dist).length > 0 && !strict) {
     setCameraPosition(viewer, dist.destination, dist.orientation)
   } else {
     if (isFly) {
@@ -71,7 +72,9 @@ export function clearRegionPoly(viewer: Cesium.Viewer, regions: string[] | strin
   const regionAll = Array.isArray(regions) ? regions : [regions]
 
   regionAll.forEach((region) => {
-    const lineId = `${region}-line3D`
-    viewer.entities.removeById(lineId)
+    const entitiesToRemove = viewer.entities.values.filter(e => e.id.startsWith(`${region}-line3D`))
+    entitiesToRemove.forEach(e => {
+      viewer.entities.remove(e)
+    })
   })
 }

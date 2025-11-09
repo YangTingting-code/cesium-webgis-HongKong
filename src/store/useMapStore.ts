@@ -53,52 +53,5 @@ export const usePointsStore = defineStore('points', {
       viewer.entities.removeById(pointEntityId);
     },
   },
-  //计算
-});
+})
 
-//用于高亮 后期处理
-/* export const useSearchStore = defineStore('osm3DFeature', {
-  state: () => ({
-    // 唯一的高亮后期阶段
-    stage: null as Cesium.PostProcessStageComposite | null,
-    // 当前被高亮的要素数组
-    highlightedFeatures: [] as Cesium.Cesium3DTileFeature[],
-  }),
-  actions: { */
-/**
- * 初始化（全局只需调用一次） 放在创建完viewer之后
- */
-/* init(viewer: Cesium.Viewer) {
-  // console.log('init之前this.stage', this.stage)
-  if (!this.stage) {
-    // console.log('开始stage初始化')
-    this.stage = Cesium.PostProcessStageLibrary.createSilhouetteStage();
-    this.stage.uniforms.color = Cesium.Color.CYAN;
-    this.stage.selected = [];
-    viewer.scene.postProcessStages.add(this.stage); */
-// console.log('stage存在吗？', this.stage);
-
-//   }
-// },
-/* addOSM3DFeature(feature: Cesium.Cesium3DTileFeature) {
-  this.highlightedFeatures.push(feature)
-}, */
-/**
- * 高亮一个或多个 3DTileFeature
- */
-/* highlight(features: Cesium.Cesium3DTileFeature[]) {
-  console.log('stage存在吗？', this.stage);
-  if (!this.stage) return;
-  this.highlightedFeatures = features;
-  this.stage.selected = features;
-}, */
-/**
- * 清空高亮
- */
-/* clear() {
-  if (!this.stage) return;
-  this.highlightedFeatures = [];
-  this.stage.selected = [];
-},
-},
-}) */

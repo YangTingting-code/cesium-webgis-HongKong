@@ -46,7 +46,7 @@ watch(()=>regionStore.currRegions,(newV)=>{
   let isFlyTo = true
   //如果当前是绘制热力图状态就不要flyto
   if(heatmapPersistence.getIsHeatmap()) isFlyTo = false
-  makeRegionPoly(viewerRef.value,newV,isFlyTo)
+  makeRegionPoly(viewerRef.value,newV,isFlyTo,true)
 })
 
 onMounted(async () => {

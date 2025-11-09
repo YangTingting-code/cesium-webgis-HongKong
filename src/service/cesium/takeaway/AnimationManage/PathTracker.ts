@@ -1,7 +1,6 @@
 //PathTracker 是“路径状态协调者”，PathService 是“路径执行者”。
 import type { SegmentType, CombinedOrder } from '@/interface/takeaway/interface'
 import { type PathService } from '@/service/cesium/takeaway/PathManage/PathService'
-import { useBucketStore } from '@/store/takeaway/bucketStore'
 import { ScenePersistence } from '../SceneManage/ScenePersistence'
 
 export class PathTracker {

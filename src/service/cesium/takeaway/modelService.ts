@@ -1,12 +1,13 @@
 import * as Cesium from 'cesium'
 import riderModel from '@/assets/3dmodel/motor_vespa.glb?url'
+import riderModelgltf from '@/assets/3dmodel/motor_vespa_gltf/scene.gltf?url'
 import { throttle } from 'lodash-es';
 
 export class ModelService {
   private viewer: Cesium.Viewer
   private riderEntity: Cesium.Entity | null = null
   private followCamListener: Cesium.Event.RemoveCallback | null = null
-  // private scale: number = 5
+  private scaleCallback: any = null
 
   constructor(viewer: Cesium.Viewer) {
     this.viewer = viewer
@@ -25,15 +26,15 @@ export class ModelService {
    * @returns 
    */
   private createRiderModelEntity(getPosition: () => Cesium.Cartesian3, getOrientation: () => Cesium.Quaternion) {
-    const scaleCallback = throttle(this.createScaleCallback(getPosition), 30)
+    this.scaleCallback = throttle(this.createScaleCallback(getPosition), 30)
     //闭包工厂函数
     this.riderEntity = this.viewer.entities.add({
       id: 'rider',
       //这个position 用的和轨迹线的一样 骑手位置应该比轨迹线高一点
       position: new Cesium.CallbackProperty(() => getPosition(), false), // 骑手位置动态更新
       model: {
-        uri: riderModel,  // 你的骑手模型
-        scale: new Cesium.CallbackProperty(scaleCallback, false) //scaleCallback本身就是箭头函数 所以可以直接在 CallbackProperty 传入， scaleCallback返回的 number值会被 处理成Property值
+        uri: riderModelgltf,  // 你的骑手模型
+        scale: new Cesium.CallbackProperty(this.scaleCallback, false) //scaleCallback本身就是箭头函数 所以可以直接在 CallbackProperty 传入， scaleCallback返回的 number值会被 处理成Property值
       },
       orientation: new Cesium.CallbackProperty(() => {
         const pathOrientation = getOrientation() //当前计算的方向是路径的方向
@@ -352,6 +353,9 @@ export class ModelService {
       this.riderEntity = null
       console.log('已移除骑手模型实体')
     }
+    //2. 移除throttle
+    this.scaleCallback?.cancel()
+    this.scaleCallback = null
     //移除照相机 lookAtTransform 绑定
     this.viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY)
   }

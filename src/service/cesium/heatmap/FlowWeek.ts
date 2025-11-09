@@ -209,19 +209,6 @@ export class FlowWeek {
           bucket[r] = this.makeEmptyBucket()
         )
       }
-      //   res.points.forEach(item => { //遍历当前slot的每一个建筑点 根据建筑点的类型 累加到对应的变量
-      //     this.sumSevenPeriod[item.sceneType as keyof typeof this.sumSevenPeriod] += item.value
-      //   })
-      //   // 找出当前小时属于哪个时间段
-      //   const currentSlot = this.timeSlots.find((seg) => i + 1 === seg.end);
-      //   if (currentSlot) {
-      //     keys.forEach(k => {
-      //       this.oneDay_SevenPeriod[currentSlot.key][k] += this.sumSevenPeriod[k] / (currentSlot.end - currentSlot.start)
-      //       this.sumSevenPeriod[k] = 0 // 清空，准备下个时间段
-      //     })
-      //   }
-      // }
-      // return this.oneDay_SevenPeriod
 
     }
     return result
